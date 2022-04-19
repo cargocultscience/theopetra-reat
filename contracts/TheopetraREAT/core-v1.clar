@@ -3,7 +3,7 @@
 
 ;; GENERAL CONFIGURATION
 
-(impl-trait 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.citycoin-core-trait.citycoin-core)
+(impl-trait 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.theopetra-reat-core-trait.citycoin-core)
 (define-constant CONTRACT_OWNER tx-sender)
 
 ;; ERROR CODES
@@ -33,18 +33,33 @@
 ;; CITY WALLET MANAGEMENT
 
 ;; initial value for city wallet, set to this contract until initialized
-(define-data-var cityWallet principal 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-core-v1)
+(define-data-var nonProfitWallet principal 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-core-v1)
+(define-data-var ecoSystemWallet principal 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-core-v1)
+
 
 ;; returns set city wallet principal
-(define-read-only (get-city-wallet)
-  (var-get cityWallet)
+(define-read-only (get-non-profit-wallet)
+  (var-get nonProfitWallet)
 )
- 
-;; protected function to update city wallet variable
-(define-public (set-city-wallet (newCityWallet principal))
+
+;; returns set eco system wallet principal
+(define-read-only (get-eco-system-wallet)
+  (var-get ecoSystemWallet)
+)
+
+;; protected function to update non profit wallet variable
+(define-public (set-non-profit-wallet (newNonProfitWallet principal))
   (begin
     (asserts! (is-authorized-auth) (err ERR_UNAUTHORIZED))
-    (ok (var-set cityWallet newCityWallet))
+    (ok (var-set nonProfitWallet newNonProfitWallet))
+  )
+)
+
+;; protected function to update eco system wallet variable
+(define-public (set-eco-system-wallet (newEcoSystemWallet principal))
+  (begin
+    (asserts! (is-authorized-auth) (err ERR_UNAUTHORIZED))
+    (ok (var-set ecoSystemWallet newEcoSystemWallet))
   )
 )
 
@@ -132,7 +147,7 @@
     (
       (newId (+ u1 (var-get usersNonce)))
       (threshold (var-get activationThreshold))
-      (initialized (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-auth is-initialized))
+      (initialized (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-auth is-initialized))
     )
 
     (asserts! initialized (err ERR_UNAUTHORIZED))
@@ -155,8 +170,8 @@
         (
           (activationBlockVal (+ block-height (var-get activationDelay)))
         )
-        (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-auth activate-core-contract (as-contract tx-sender) activationBlockVal))
-        (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-token activate-token (as-contract tx-sender) activationBlockVal))
+        (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-auth activate-core-contract (as-contract tx-sender) activationBlockVal))
+        (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-token activate-token (as-contract tx-sender) activationBlockVal))
         (try! (set-coinbase-thresholds))
         (var-set activationReached true)
         (var-set activationBlock activationBlockVal)
@@ -170,7 +185,13 @@
 ;; MINING CONFIGURATION
 
 ;; define split to custodied wallet address for the city
-(define-constant SPLIT_CITY_PCT u30)
+(define-constant SPLIT_STACKERS_PCT u80)
+(define-constant SPLIT_NON_PROFIT_PCT u15)
+(define-constant SPLIT_ECO_SYSTEM_PCT u5)
+
+(define-constant SPLIT_PRE_STACKING_NON_PROFIT_PCT u75)
+(define-constant SPLIT_PRE_STACKING_ECO_SYSTEM_PCT u25)
+
 
 ;; how long a miner must wait before block winner can claim their minted tokens
 (define-data-var tokenRewardMaturity uint u100)
@@ -186,7 +207,8 @@
   {
     minersCount: uint,
     amount: uint,
-    amountToCity: uint,
+    amountToNonProfit: uint,
+    amountToEcoSystem: uint,
     amountToStackers: uint,
     rewardClaimed: bool
   }
@@ -203,7 +225,8 @@
   (default-to {
       minersCount: u0,
       amount: u0,
-      amountToCity: u0,
+      amountToNonProfit: u0,
+      amountToEcoSystem: u0,
       amountToStackers: u0,
       rewardClaimed: false
     }
@@ -291,15 +314,16 @@
   (begin
     (asserts! (get-activation-status) (err ERR_CONTRACT_NOT_ACTIVATED))
     (asserts! (> (len amounts) u0) (err ERR_INSUFFICIENT_COMMITMENT))
-    (match (fold mine-single amounts (ok { userId: (get-or-create-user-id tx-sender), toStackers: u0, toCity: u0, stacksHeight: block-height }))
+    (match (fold mine-single amounts (ok { userId: (get-or-create-user-id tx-sender), toStackers: u0, toNonProfit: u0, toEcoSystem: u0, stacksHeight: block-height }))
       okReturn 
       (begin
-        (asserts! (>= (stx-get-balance tx-sender) (+ (get toStackers okReturn) (get toCity okReturn))) (err ERR_INSUFFICIENT_BALANCE))
+        (asserts! (>= (stx-get-balance tx-sender) (+ (get toStackers okReturn) (get toNonProfit okReturn) (get toEcoSystem okReturn))) (err ERR_INSUFFICIENT_BALANCE))
         (if (> (get toStackers okReturn ) u0)
           (try! (stx-transfer? (get toStackers okReturn ) tx-sender (as-contract tx-sender)))
           false
         )
-        (try! (stx-transfer? (get toCity okReturn) tx-sender (var-get cityWallet)))
+        (try! (stx-transfer? (get toNonProfit okReturn) tx-sender (var-get nonProfitWallet)))
+        (try! (stx-transfer? (get toEcoSystem okReturn) tx-sender (var-get ecoSystemWallet)))
         (print { 
           firstBlock: block-height, 
           lastBlock: (- (+ block-height (len amounts)) u1) 
@@ -317,7 +341,8 @@
     { 
       userId: uint,
       toStackers: uint,
-      toCity: uint,
+      toNonProfit: uint,
+      toEcoSystem: uint,
       stacksHeight: uint
     }
     uint
@@ -329,21 +354,29 @@
         (stacksHeight (get stacksHeight okReturn))
         (rewardCycle (default-to u0 (get-reward-cycle stacksHeight)))
         (stackingActive (stacking-active-at-cycle rewardCycle))
-        (toCity
+        (toNonProfit
           (if stackingActive
-            (/ (* SPLIT_CITY_PCT amountUstx) u100)
-            amountUstx
+            (/ (* SPLIT_NON_PROFIT_PCT amountUstx) u100)
+            (/ (* SPLIT_PRE_STACKING_NON_PROFIT_PCT amountUstx) u100)
           )
         )
-        (toStackers (- amountUstx toCity))
+        (toEcoSystem
+          (if stackingActive
+            (/ (* SPLIT_ECO_SYSTEM_PCT amountUstx) u100)
+            (/ (* SPLIT_PRE_STACKING_ECO_SYSTEM_PCT amountUstx) u100)
+          )
+        )
+        (toStackers (- amountUstx (+ toNonProfit toEcoSystem)))
       )
+      ;; cpb todo add assert that the percentages all equal 100
       (asserts! (not (has-mined-at-block stacksHeight (get userId okReturn))) (err ERR_USER_ALREADY_MINED))
       (asserts! (> amountUstx u0) (err ERR_INSUFFICIENT_COMMITMENT))
-      (try! (set-tokens-mined (get userId okReturn) stacksHeight amountUstx toStackers toCity))
+      (try! (set-tokens-mined (get userId okReturn) stacksHeight amountUstx toStackers toNonProfit toEcoSystem))
       (ok (merge okReturn 
         {
           toStackers: (+ (get toStackers okReturn) toStackers),
-          toCity: (+ (get toCity okReturn) toCity),
+          toNonProfit: (+ (get toNonProfit okReturn) toNonProfit),
+          toEcoSystem: (+ (get toEcoSystem okReturn) toEcoSystem),
           stacksHeight: (+ stacksHeight u1)
         }
       ))
@@ -357,19 +390,25 @@
     (
       (rewardCycle (default-to u0 (get-reward-cycle stacksHeight)))
       (stackingActive (stacking-active-at-cycle rewardCycle))
-      (toCity
+      (toNonProfit
         (if stackingActive
-          (/ (* SPLIT_CITY_PCT amountUstx) u100)
-          amountUstx
+          (/ (* SPLIT_NON_PROFIT_PCT amountUstx) u100)
+          (/ (* SPLIT_PRE_STACKING_NON_PROFIT_PCT amountUstx) u100)
         )
       )
-      (toStackers (- amountUstx toCity))
+      (toEcoSystem
+        (if stackingActive
+          (/ (* SPLIT_ECO_SYSTEM_PCT amountUstx) u100)
+          (/ (* SPLIT_PRE_STACKING_ECO_SYSTEM_PCT amountUstx) u100)
+        )
+      )
+      (toStackers (- amountUstx (+ toNonProfit toEcoSystem))
     )
     (asserts! (get-activation-status) (err ERR_CONTRACT_NOT_ACTIVATED))
     (asserts! (not (has-mined-at-block stacksHeight userId)) (err ERR_USER_ALREADY_MINED))
     (asserts! (> amountUstx u0) (err ERR_INSUFFICIENT_COMMITMENT))
     (asserts! (>= (stx-get-balance tx-sender) amountUstx) (err ERR_INSUFFICIENT_BALANCE))
-    (try! (set-tokens-mined userId stacksHeight amountUstx toStackers toCity))
+    (try! (set-tokens-mined userId stacksHeight amountUstx toStackers toNonProfit toEcoSystem))
     (if (is-some memo)
       (print memo)
       none
@@ -378,12 +417,13 @@
       (try! (stx-transfer? toStackers tx-sender (as-contract tx-sender)))
       false
     )
-    (try! (stx-transfer? toCity tx-sender (var-get cityWallet)))
+    (try! (stx-transfer? toNonProfit tx-sender (var-get nonProfitWallet)))
+    (try! (stx-transfer? toEcoSystem tx-sender (var-get ecoSystemWallet)))
     (ok true)
   )
 )
 
-(define-private (set-tokens-mined (userId uint) (stacksHeight uint) (amountUstx uint) (toStackers uint) (toCity uint))
+(define-private (set-tokens-mined (userId uint) (stacksHeight uint) (amountUstx uint) (toStackers uint) (toNonProfit uint) (toEcoSystem uint))
   (let
     (
       (blockStats (get-mining-stats-at-block-or-default stacksHeight))
@@ -398,7 +438,8 @@
       {
         minersCount: newMinersCount,
         amount: (+ (get amount blockStats) amountUstx),
-        amountToCity: (+ (get amountToCity blockStats) toCity),
+        amountToNonProfit: (+ (get amountToNonProfit blockStats) toNonProfit),
+        amountToEcoSystem: (+ (get amountToEcoSystem blockStats) toEcoSystem),
         amountToStackers: (+ (get amountToStackers blockStats) toStackers),
         rewardClaimed: false
       }
@@ -454,7 +495,7 @@
       (blockStats (unwrap! (get-mining-stats-at-block minerBlockHeight) (err ERR_NO_MINERS_AT_BLOCK)))
       (minerStats (unwrap! (get-miner-at-block minerBlockHeight userId) (err ERR_USER_DID_NOT_MINE_IN_BLOCK)))
       (isMature (asserts! (> stacksHeight maturityHeight) (err ERR_CLAIMED_BEFORE_MATURITY)))
-      (vrfSample (unwrap! (contract-call? 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.citycoin-vrf get-random-uint-at-block maturityHeight) (err ERR_NO_VRF_SEED_FOUND)))
+      (vrfSample (unwrap! (contract-call? 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.theopetra-reat-vrf get-random-uint-at-block maturityHeight) (err ERR_NO_VRF_SEED_FOUND)))
       (commitTotal (get-last-high-value-at-block minerBlockHeight))
       (winningValue (mod vrfSample commitTotal))
     )
@@ -478,7 +519,8 @@
       {
         minersCount: (get minersCount blockStats),
         amount: (get amount blockStats),
-        amountToCity: (get amountToCity blockStats),
+        amountToNonProfit: (get amountToNonProfit blockStats),
+        amountToEcoSystem: (get amountToEcoSystem blockStats),
         amountToStackers: (get amountToStackers blockStats),
         rewardClaimed: true
       }
@@ -519,7 +561,7 @@
       (blockStats (unwrap! (get-mining-stats-at-block minerBlockHeight) false))
       (minerStats (unwrap! (get-miner-at-block minerBlockHeight userId) false))
       (maturityHeight (+ (var-get tokenRewardMaturity) minerBlockHeight))
-      (vrfSample (unwrap! (contract-call? 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.citycoin-vrf get-random-uint-at-block maturityHeight) false))
+      (vrfSample (unwrap! (contract-call? 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.theopetra-reat-vrf get-random-uint-at-block maturityHeight) false))
       (commitTotal (get-last-high-value-at-block minerBlockHeight))
       (winningValue (mod vrfSample commitTotal))
     )
@@ -669,12 +711,13 @@
         first: targetCycle,
         last: (+ targetCycle lockPeriod)
       })
-    )
+    )  
     (asserts! (get-activation-status) (err ERR_CONTRACT_NOT_ACTIVATED))
+    ;; CPB TODO add an assert that we are not past the last reward period
     (asserts! (and (> lockPeriod u0) (<= lockPeriod MAX_REWARD_CYCLES))
       (err ERR_CANNOT_STACK))
     (asserts! (> amountTokens u0) (err ERR_CANNOT_STACK))
-    (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-token transfer amountTokens tx-sender (as-contract tx-sender) none))
+    (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-token transfer amountTokens tx-sender (as-contract tx-sender) none))
     (print {
       firstCycle: targetCycle, 
       lastCycle: (- (+ targetCycle lockPeriod) u1)
@@ -791,7 +834,7 @@
     )
     ;; send back tokens if user was eligible
     (if (> toReturn u0)
-      (try! (as-contract (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-token transfer toReturn tx-sender user none)))
+      (try! (as-contract (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-token transfer toReturn tx-sender user none)))
       true
     )
     ;; send back rewards if user was eligible
@@ -815,7 +858,7 @@
 (define-private (set-coinbase-thresholds)
   (let
     (
-      (coinbaseAmounts (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-token get-coinbase-thresholds)))
+      (coinbaseAmounts (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-token get-coinbase-thresholds)))
     )
     (var-set coinbaseThreshold1 (get coinbaseThreshold1 coinbaseAmounts))
     (var-set coinbaseThreshold2 (get coinbaseThreshold2 coinbaseAmounts))
@@ -851,27 +894,19 @@
     ;; if contract is active, return based on issuance schedule
     ;; halvings occur every 210,000 blocks for 1,050,000 Stacks blocks
     ;; then mining continues indefinitely with 3,125 tokens as the reward
-    (asserts! (> minerBlockHeight (var-get coinbaseThreshold1))
-      (if (<= (- minerBlockHeight (var-get activationBlock)) u10000)
-        ;; bonus reward first 10,000 blocks
-        u250000
-        ;; standard reward remaining 200,000 blocks until 1st halving
-        u100000
-      )
-    )
-    ;; computations based on each halving threshold
-    (asserts! (> minerBlockHeight (var-get coinbaseThreshold2)) u50000)
-    (asserts! (> minerBlockHeight (var-get coinbaseThreshold3)) u25000)
-    (asserts! (> minerBlockHeight (var-get coinbaseThreshold4)) u12500)
-    (asserts! (> minerBlockHeight (var-get coinbaseThreshold5)) u6250)
+    (asserts! (> minerBlockHeight (var-get coinbaseThreshold1)) u7230)
+    (asserts! (> minerBlockHeight (var-get coinbaseThreshold2)) u1356)
+    (asserts! (> minerBlockHeight (var-get coinbaseThreshold3)) u677)
+    (asserts! (> minerBlockHeight (var-get coinbaseThreshold4)) u339)
+    (asserts! (> minerBlockHeight (var-get coinbaseThreshold5)) u90)
     ;; default value after 5th halving
-    u3125
+    u0
   )
 )
 
 ;; mint new tokens for claimant who won at given Stacks block height
 (define-private (mint-coinbase (recipient principal) (stacksHeight uint))
-  (as-contract (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-token mint (get-coinbase-amount stacksHeight) recipient))
+  (as-contract (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-token mint (get-coinbase-amount stacksHeight) recipient))
 )
 
 ;; UTILITIES
@@ -906,5 +941,5 @@
 
 ;; checks if caller is Auth contract
 (define-private (is-authorized-auth)
-  (is-eq contract-caller 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-auth)
+  (is-eq contract-caller 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-auth)
 )

@@ -1,12 +1,12 @@
-;; NEWYORKCITYCOIN AUTH CONTRACT
-;; CityCoins Protocol Version 1.0.1
+;; THEOPETRA REAT AUTH CONTRACT
+;; Based on CityCoins Protocol Version 1.0.1
 
 (define-constant CONTRACT_OWNER tx-sender)
 
 ;; TRAIT DEFINITIONS
 
-(use-trait coreTrait 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.citycoin-core-trait.citycoin-core)
-(use-trait tokenTrait 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.citycoin-token-trait.citycoin-token)
+(use-trait coreTrait 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.theopetra-reat-core-trait.citycoin-core)
+(use-trait tokenTrait 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.theopetra-reat-token-trait.citycoin-token)
 
 ;; ERRORS
 

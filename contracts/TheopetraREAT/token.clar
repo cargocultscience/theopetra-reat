@@ -1,5 +1,5 @@
-;; NEWYORKCITYCOIN TOKEN CONTRACT
-;; CityCoins Protocol Version 1.0.1
+;; THEOPETRA REAT TOKEN CONTRACT
+;; Based on CityCoins Protocol Version 1.0.1
 
 ;; CONTRACT OWNER
 
@@ -7,8 +7,9 @@
 
 ;; TRAIT DEFINITIONS
 
-(impl-trait 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.citycoin-token-trait.citycoin-token)
-(use-trait coreTrait 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.citycoin-core-trait.citycoin-core)
+;; TODO CBP update this
+(impl-trait 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.theopetra-reat-token-trait.theopetra-reat-token)
+(use-trait coreTrait 'SP466FNC0P7JWTNM2R9T199QRZN1MYEDTAR0KP27.theopetra-reat-core-trait.theopetra-reat-core)
 
 ;; ERROR CODES
 
@@ -20,7 +21,7 @@
 
 (impl-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
 
-(define-fungible-token newyorkcitycoin)
+(define-fungible-token theopetra-reat)
 
 ;; SIP-010 FUNCTIONS
 
@@ -31,16 +32,16 @@
       (print memo)
       none
     )
-    (ft-transfer? newyorkcitycoin amount from to)
+    (ft-transfer? theopetra-reat amount from to)
   )
 )
 
 (define-read-only (get-name)
-  (ok "newyorkcitycoin")
+  (ok "theopetra-reat")
 )
 
 (define-read-only (get-symbol)
-  (ok "NYC")
+  (ok "REAT")
 )
 
 (define-read-only (get-decimals)
@@ -48,11 +49,11 @@
 )
 
 (define-read-only (get-balance (user principal))
-  (ok (ft-get-balance newyorkcitycoin user))
+  (ok (ft-get-balance theopetra-reat user))
 )
 
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply newyorkcitycoin))
+  (ok (ft-get-supply theopetra-reat))
 )
 
 (define-read-only (get-token-uri)
@@ -83,7 +84,7 @@
 (define-public (activate-token (coreContract principal) (stacksHeight uint))
   (let
     (
-      (coreContractMap (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-auth get-core-contract-info coreContract)))
+      (coreContractMap (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-auth get-core-contract-info coreContract)))
     )
     (asserts! (is-eq (get state coreContractMap) STATE_ACTIVE) (err ERR_UNAUTHORIZED))
     (asserts! (not (var-get tokenActivated)) (err ERR_TOKEN_ALREADY_ACTIVATED))
@@ -130,22 +131,22 @@
 (define-public (mint (amount uint) (recipient principal))
   (let
     (
-      (coreContract (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-auth get-core-contract-info contract-caller)))
+      (coreContract (try! (contract-call? 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-auth get-core-contract-info contract-caller)))
     )
-    (ft-mint? newyorkcitycoin amount recipient)
+    (ft-mint? theopetra-reat amount recipient)
   )
 )
 
 (define-public (burn (amount uint) (owner principal))
   (begin
     (asserts! (is-eq tx-sender owner) (err ERR_UNAUTHORIZED))
-    (ft-burn? newyorkcitycoin amount owner)
+    (ft-burn? theopetra-reat amount owner)
   )
 )
 
 ;; checks if caller is Auth contract
 (define-private (is-authorized-auth)
-  (is-eq contract-caller 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.newyorkcitycoin-auth)
+  (is-eq contract-caller 'SP2H8PY27SEZ03MWRKS5XABZYQN17ETGQS3527SA5.theopetra-reat-auth)
 )
 
 ;; SEND-MANY
