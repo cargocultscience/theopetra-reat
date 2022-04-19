@@ -38,7 +38,7 @@ describe("[CityCoin Token]", () => {
           amount,
           from.address,
           to.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
 
@@ -75,7 +75,7 @@ describe("[CityCoin Token]", () => {
           amount,
           from.address,
           to.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
 
@@ -125,18 +125,18 @@ describe("[CityCoin Token]", () => {
     });
 
     describe("get-name()", () => {
-      it("returns 'citycoins'", () => {
+      it("returns 'theopetra-reat'", () => {
         const result = token.getName().result;
 
-        result.expectOk().expectAscii("citycoins");
+        result.expectOk().expectAscii("theopetra-reat");
       });
     });
 
     describe("get-symbol()", () => {
-      it("returns 'CYCN'", () => {
+      it("returns 'REAT'", () => {
         const result = token.getSymbol().result;
 
-        result.expectOk().expectAscii("CYCN");
+        result.expectOk().expectAscii("REAT");
       });
     });
 
@@ -242,7 +242,7 @@ describe("[CityCoin Token]", () => {
         receipt.events.expectFungibleTokenBurnEvent(
           amount,
           owner.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
     });
@@ -282,7 +282,7 @@ describe("[CityCoin Token]", () => {
         receipt.events.expectFungibleTokenMintEvent(
           amount,
           recipient.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
     });
@@ -370,7 +370,7 @@ describe("[CityCoin Token]", () => {
               sendManyRecords[sendManyIdx].amount,
               from.address,
               sendManyRecords[sendManyIdx].to.address,
-              "citycoins"
+              "theopetra-reat"
             );
           }
 
@@ -437,7 +437,7 @@ describe("[CityCoin Token]", () => {
               sendManyRecords[sendManyIdx].amount,
               from.address,
               sendManyRecords[sendManyIdx].to.address,
-              "citycoins"
+              "theopetra-reat"
             );
           }
 
@@ -512,7 +512,7 @@ describe("[CityCoin Token]", () => {
               sendManyRecords[sendManyIdx].amount,
               from.address,
               sendManyRecords[sendManyIdx].to.address,
-              "citycoins"
+              "theopetra-reat"
             );
           }
 

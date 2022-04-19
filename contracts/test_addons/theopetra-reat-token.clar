@@ -4,7 +4,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-public (test-mint (amount uint) (recipient principal))
-  (ft-mint? citycoins amount recipient)
+  (ft-mint? theopetra-reat amount recipient)
 )
 
 (define-public (test-set-token-activation)

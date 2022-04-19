@@ -20,7 +20,7 @@
 (impl-trait 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.sip-010-trait)
 ;; testnet: (impl-trait 'STR8P3RD1EHA8AA37ERSSSZSWKS9T2GYQFGXNA4C.sip-010-trait-ft-standard.sip-010-trait)
 
-(define-fungible-token citycoins)
+(define-fungible-token theopetra-reat)
 
 ;; SIP-010 FUNCTIONS
 
@@ -31,16 +31,16 @@
       (print memo)
       none
     )
-    (ft-transfer? citycoins amount from to)
+    (ft-transfer? theopetra-reat amount from to)
   )
 )
 
 (define-read-only (get-name)
-  (ok "citycoins")
+  (ok "theopetra-reat")
 )
 
 (define-read-only (get-symbol)
-  (ok "CYCN")
+  (ok "REAT")
 )
 
 (define-read-only (get-decimals)
@@ -48,11 +48,11 @@
 )
 
 (define-read-only (get-balance (user principal))
-  (ok (ft-get-balance citycoins user))
+  (ok (ft-get-balance theopetra-reat user))
 )
 
 (define-read-only (get-total-supply)
-  (ok (ft-get-supply citycoins))
+  (ok (ft-get-supply theopetra-reat))
 )
 
 (define-read-only (get-token-uri)
@@ -115,7 +115,7 @@
 )
 
 ;; UTILITIES
-
+;; CPB TODO replace with theopetra webhost
 (define-data-var tokenUri (optional (string-utf8 256)) (some u"https://cdn.citycoins.co/metadata/citycoin.json"))
 
 ;; set token URI to new value, only accessible by Auth
@@ -132,14 +132,14 @@
     (
       (coreContract (try! (contract-call? .theopetra-reat-auth get-core-contract-info contract-caller)))
     )
-    (ft-mint? citycoins amount recipient)
+    (ft-mint? theopetra-reat amount recipient)
   )
 )
 
 (define-public (burn (amount uint) (owner principal))
   (begin
     (asserts! (is-eq tx-sender owner) (err ERR_UNAUTHORIZED))
-    (ft-burn? citycoins amount owner)
+    (ft-burn? theopetra-reat amount owner)
   )
 )
 

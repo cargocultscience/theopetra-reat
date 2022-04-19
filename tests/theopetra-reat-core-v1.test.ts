@@ -1085,7 +1085,7 @@ describe("[CityCoin Core]", () => {
         receipt.events.expectFungibleTokenMintEvent(
           250000,
           miner.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
 
@@ -1121,7 +1121,7 @@ describe("[CityCoin Core]", () => {
         receipt.events.expectFungibleTokenMintEvent(
           100000,
           miner.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
 
@@ -1157,7 +1157,7 @@ describe("[CityCoin Core]", () => {
         receipt.events.expectFungibleTokenMintEvent(
           50000,
           miner.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
 
@@ -1193,7 +1193,7 @@ describe("[CityCoin Core]", () => {
         receipt.events.expectFungibleTokenMintEvent(
           25000,
           miner.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
 
@@ -1229,7 +1229,7 @@ describe("[CityCoin Core]", () => {
         receipt.events.expectFungibleTokenMintEvent(
           12500,
           miner.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
 
@@ -1265,7 +1265,7 @@ describe("[CityCoin Core]", () => {
         receipt.events.expectFungibleTokenMintEvent(
           6250,
           miner.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
 
@@ -1301,7 +1301,7 @@ describe("[CityCoin Core]", () => {
         receipt.events.expectFungibleTokenMintEvent(
           3125,
           miner.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
     });
@@ -1835,7 +1835,7 @@ describe("[CityCoin Core]", () => {
           amountTokens,
           stacker.address,
           core.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
 
@@ -1875,7 +1875,7 @@ describe("[CityCoin Core]", () => {
             amountTokens,
             stacker.address,
             core.address,
-            "citycoins"
+            "theopetra-reat"
           );
         });
       });
@@ -2289,7 +2289,7 @@ describe("[CityCoin Core]", () => {
           amountTokens,
           core.address,
           stacker.address,
-          "citycoins"
+          "theopetra-reat"
         );
 
         receipt.events.expectSTXTransferEvent(
@@ -2330,7 +2330,7 @@ describe("[CityCoin Core]", () => {
           amountTokens,
           core.address,
           stacker.address,
-          "citycoins"
+          "theopetra-reat"
         );
       });
 
@@ -2421,7 +2421,7 @@ describe("[CityCoin Core]", () => {
               toReturn,
               core.address,
               stacker.address,
-              "citycoins"
+              "theopetra-reat"
             );
           }
         }
