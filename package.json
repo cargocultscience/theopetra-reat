@@ -1,12 +1,12 @@
 {
-  "name": "citycoin",
+  "name": "theopetra-reat",
   "version": "1.0.1",
   "description": "A smart contract implementation of the Proof of Transfer consensus mechanism, allowing for the mining and Stacking of a new fungible token on the Stacks blockchain with a portion of miner rewards going to a custodied account for a city to claim the protocol contribution.",
   "scripts": {
     "test": "npm run clarinet:test",
-    "test:token": "npm run clarinet:prepare && clarinet test ./tests/citycoin-token.test.ts",
-    "test:core": "npm run clarinet:prepare && clarinet test ./tests/citycoin-core-v1.test.ts",
-    "test:auth": "npm run clarinet:prepare && clarinet test ./tests/citycoin-auth.test.ts",
+    "test:token": "npm run clarinet:prepare && clarinet test ./tests/theopetra-reat-token.test.ts",
+    "test:core": "npm run clarinet:prepare && clarinet test ./tests/theopetra-reat-core-v1.test.ts",
+    "test:auth": "npm run clarinet:prepare && clarinet test ./tests/theopetra-reat-auth.test.ts",
     "clarinet:check": "npm run clarinet:prepare && clarinet check",
     "clarinet:test": "npm run clarinet:prepare && clarinet test",
     "clarinet:codecov": "npm run clarinet:prepare && clarinet test --coverage",

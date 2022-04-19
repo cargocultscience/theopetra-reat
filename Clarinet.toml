@@ -1,33 +1,33 @@
 [project]
 name = "citycoin"
 
-[contracts.citycoin-vrf]
-path = "contracts/clarinet/citycoin-vrf.clar"
+[contracts.theopetra-reat-vrf]
+path = "contracts/clarinet/theopetra-reat-vrf.clar"
 depends_on = []
 
-[contracts.citycoin-core-trait]
-path = "contracts/clarinet/citycoin-core-trait.clar"
+[contracts.theopetra-reat-core-trait]
+path = "contracts/clarinet/theopetra-reat-core-trait.clar"
 depends_on = []
 
-[contracts.citycoin-token-trait]
-path = "contracts/clarinet/citycoin-token-trait.clar"
+[contracts.theopetra-reat-token-trait]
+path = "contracts/clarinet/theopetra-reat-token-trait.clar"
 depends_on = []
 
-[contracts.citycoin-auth]
-path = "contracts/clarinet/citycoin-auth.clar"
-depends_on = ["citycoin-core-trait", "citycoin-token-trait"]
+[contracts.theopetra-reat-auth]
+path = "contracts/clarinet/theopetra-reat-auth.clar"
+depends_on = ["theopetra-reat-core-trait", "theopetra-reat-token-trait"]
 
-[contracts.citycoin-token]
-path = "contracts/clarinet/citycoin-token.clar"
-depends_on = ["sip-010-trait", "citycoin-auth", "citycoin-token-trait"]
+[contracts.theopetra-reat-token]
+path = "contracts/clarinet/theopetra-reat-token.clar"
+depends_on = ["sip-010-trait", "theopetra-reat-auth", "theopetra-reat-token-trait"]
 
-[contracts.citycoin-core-v1]
-path = "contracts/clarinet/citycoin-core-v1.clar"
-depends_on = ["citycoin-auth", "citycoin-token", "citycoin-vrf", "citycoin-core-trait"]
+[contracts.theopetra-reat-core-v1]
+path = "contracts/clarinet/theopetra-reat-core-v1.clar"
+depends_on = ["theopetra-reat-auth", "theopetra-reat-token", "theopetra-reat-vrf", "theopetra-reat-core-trait"]
 
-[contracts.citycoin-core-v2]
-path = "contracts/clarinet/citycoin-core-v2.clar"
-depends_on = ["citycoin-auth", "citycoin-token", "citycoin-vrf", "citycoin-core-trait"]
+[contracts.theopetra-reat-core-v2]
+path = "contracts/clarinet/theopetra-reat-core-v2.clar"
+depends_on = ["theopetra-reat-auth", "theopetra-reat-token", "theopetra-reat-vrf", "theopetra-reat-core-trait"]
 
 # contracts listed below are used only in testing
 
@@ -38,4 +38,4 @@ depends_on = []
 # contracts listed below are used only in test suite
 [contracts.test-utils]
 path = "contracts/clarinet/test-utils.clar"
-depends_on = ["citycoin-core-v1"]
+depends_on = ["theopetra-reat-core-v1"]

@@ -1,6 +1,6 @@
-;; CITYCOIN CORE TRAIT
+;; THEOPETRA CORE TRAIT
 
-(define-trait citycoin-core
+(define-trait theopetra-reat-core
   (
 
     (register-user ((optional (string-utf8 50)))

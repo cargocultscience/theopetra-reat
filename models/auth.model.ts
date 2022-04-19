@@ -21,7 +21,7 @@ enum ErrCode {
 }
 
 export class AuthModel extends Model {
-  name = "citycoin-auth";
+  name = "theopetra-reat-auth";
 
   static readonly ErrCode = ErrCode;
   static readonly ContractState = ContractState;

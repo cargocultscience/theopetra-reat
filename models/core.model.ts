@@ -25,7 +25,7 @@ enum ErrCode {
 }
 
 export class CoreModel extends Model {
-  name = "citycoin-core-v1"
+  name = "theopetra-reat-core-v1"
 
   static readonly ErrCode = ErrCode;
   static readonly ACTIVATION_DELAY = 150;

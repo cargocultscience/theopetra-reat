@@ -1,11 +1,19 @@
-;; CITYCOINS CORE CONTRACT
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; CORE CONTRACT
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; GENERAL CONFIGURATION
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(impl-trait .citycoin-core-trait.citycoin-core)
+(impl-trait .theopetra-reat-core-trait.theopetra-reat-core)
 (define-constant CONTRACT_OWNER tx-sender)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ERROR CODES
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-constant ERR_UNAUTHORIZED u1000)
 (define-constant ERR_USER_ALREADY_REGISTERED u1001)
@@ -29,10 +37,12 @@
 (define-constant ERR_UNABLE_TO_FIND_CITY_WALLET u1019)
 (define-constant ERR_CLAIM_IN_WRONG_CONTRACT u1020)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CITY WALLET MANAGEMENT
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; initial value for city wallet, set to this contract until initialized
-(define-data-var cityWallet principal .citycoin-core-v1)
+;; initial value for city wallet, set to this contract until updated
+(define-data-var cityWallet principal .theopetra-reat-core-v2)
 
 ;; returns set city wallet principal
 (define-read-only (get-city-wallet)
@@ -47,7 +57,9 @@
   )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; REGISTRATION
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-data-var activationBlock uint u340282366920938463463374607431768211455)
 (define-data-var activationDelay uint u150)
@@ -131,10 +143,7 @@
     (
       (newId (+ u1 (var-get usersNonce)))
       (threshold (var-get activationThreshold))
-      (initialized (contract-call? .citycoin-auth is-initialized))
     )
-
-    (asserts! initialized (err ERR_UNAUTHORIZED))
 
     (asserts! (is-none (map-get? UserIds tx-sender))
       (err ERR_USER_ALREADY_REGISTERED))
@@ -154,8 +163,7 @@
         (
           (activationBlockVal (+ block-height (var-get activationDelay)))
         )
-        (try! (contract-call? .citycoin-auth activate-core-contract (as-contract tx-sender) activationBlockVal))
-        (try! (contract-call? .citycoin-token activate-token (as-contract tx-sender) activationBlockVal))
+        (try! (contract-call? .theopetra-reat-auth activate-core-contract (as-contract tx-sender) activationBlockVal))
         (try! (set-coinbase-thresholds))
         (var-set activationReached true)
         (var-set activationBlock activationBlockVal)
@@ -166,7 +174,9 @@
   )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MINING CONFIGURATION
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; define split to custodied wallet address for the city
 (define-constant SPLIT_CITY_PCT u30)
@@ -273,8 +283,9 @@
 (define-read-only (get-block-winner-id (stacksHeight uint))
   (map-get? BlockWinnerIds stacksHeight)
 )
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MINING ACTIONS
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-public (mine-tokens (amountUstx uint) (memo (optional (buff 34))))
   (let
@@ -284,71 +295,6 @@
     (try! (mine-tokens-at-block userId block-height amountUstx memo))
     (ok true)
   )
-)
-
-(define-public (mine-many (amounts (list 200 uint)))
-  (begin
-    (asserts! (get-activation-status) (err ERR_CONTRACT_NOT_ACTIVATED))
-    (asserts! (> (len amounts) u0) (err ERR_INSUFFICIENT_COMMITMENT))
-    (match (fold mine-single amounts (ok { userId: (get-or-create-user-id tx-sender), toStackers: u0, toCity: u0, stacksHeight: block-height }))
-      okReturn 
-      (begin
-        (asserts! (>= (stx-get-balance tx-sender) (+ (get toStackers okReturn) (get toCity okReturn))) (err ERR_INSUFFICIENT_BALANCE))
-        (if (> (get toStackers okReturn ) u0)
-          (try! (stx-transfer? (get toStackers okReturn ) tx-sender (as-contract tx-sender)))
-          false
-        )
-        (try! (stx-transfer? (get toCity okReturn) tx-sender (var-get cityWallet)))
-        (print { 
-          firstBlock: block-height, 
-          lastBlock: (- (+ block-height (len amounts)) u1) 
-        })
-        (ok true)
-      )
-      errReturn (err errReturn)
-    )
-  )
-)
-
-(define-private (mine-single 
-  (amountUstx uint) 
-  (return (response 
-    { 
-      userId: uint,
-      toStackers: uint,
-      toCity: uint,
-      stacksHeight: uint
-    }
-    uint
-  )))
-
-  (match return okReturn
-    (let
-      (
-        (stacksHeight (get stacksHeight okReturn))
-        (rewardCycle (default-to u0 (get-reward-cycle stacksHeight)))
-        (stackingActive (stacking-active-at-cycle rewardCycle))
-        (toCity
-          (if stackingActive
-            (/ (* SPLIT_CITY_PCT amountUstx) u100)
-            amountUstx
-          )
-        )
-        (toStackers (- amountUstx toCity))
-      )
-      (asserts! (not (has-mined-at-block stacksHeight (get userId okReturn))) (err ERR_USER_ALREADY_MINED))
-      (asserts! (> amountUstx u0) (err ERR_INSUFFICIENT_COMMITMENT))
-      (try! (set-tokens-mined (get userId okReturn) stacksHeight amountUstx toStackers toCity))
-      (ok (merge okReturn 
-        {
-          toStackers: (+ (get toStackers okReturn) toStackers),
-          toCity: (+ (get toCity okReturn) toCity),
-          stacksHeight: (+ stacksHeight u1)
-        }
-      ))
-    )
-    errReturn (err errReturn)
-  ) 
 )
 
 (define-private (mine-tokens-at-block (userId uint) (stacksHeight uint) (amountUstx uint) (memo (optional (buff 34))))
@@ -418,21 +364,20 @@
       stacksHeight
       (+ minerLowVal amountUstx)
     )
-    (if (> toStackers u0)
-      (map-set StackingStatsAtCycle
-        rewardCycle
-        {
-          amountUstx: (+ (get amountUstx rewardCycleStats) toStackers),
-          amountToken: (get amountToken rewardCycleStats)
-        }
-      )
-      false
+    (map-set StackingStatsAtCycle
+      rewardCycle
+      {
+        amountUstx: (+ (get amountUstx rewardCycleStats) toStackers),
+        amountToken: (get amountToken rewardCycleStats)
+      }
     )
     (ok true)
   )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MINING REWARD CLAIM ACTIONS
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; calls function to claim mining reward in active logic contract
 (define-public (claim-mining-reward (minerBlockHeight uint))
@@ -453,7 +398,7 @@
       (blockStats (unwrap! (get-mining-stats-at-block minerBlockHeight) (err ERR_NO_MINERS_AT_BLOCK)))
       (minerStats (unwrap! (get-miner-at-block minerBlockHeight userId) (err ERR_USER_DID_NOT_MINE_IN_BLOCK)))
       (isMature (asserts! (> stacksHeight maturityHeight) (err ERR_CLAIMED_BEFORE_MATURITY)))
-      (vrfSample (unwrap! (contract-call? .citycoin-vrf get-random-uint-at-block maturityHeight) (err ERR_NO_VRF_SEED_FOUND)))
+      (vrfSample (unwrap! (contract-call? .theopetra-reat-vrf get-random-uint-at-block maturityHeight) (err ERR_NO_VRF_SEED_FOUND)))
       (commitTotal (get-last-high-value-at-block minerBlockHeight))
       (winningValue (mod vrfSample commitTotal))
     )
@@ -503,33 +448,9 @@
   )
 )
 
-(define-read-only (is-block-winner (user principal) (minerBlockHeight uint))
-  (is-block-winner-and-can-claim user minerBlockHeight false)
-)
-
-(define-read-only (can-claim-mining-reward (user principal) (minerBlockHeight uint))
-  (is-block-winner-and-can-claim user minerBlockHeight true)
-)
-
-(define-private (is-block-winner-and-can-claim (user principal) (minerBlockHeight uint) (testCanClaim bool))
-  (let
-    (
-      (userId (unwrap! (get-user-id user) false))
-      (blockStats (unwrap! (get-mining-stats-at-block minerBlockHeight) false))
-      (minerStats (unwrap! (get-miner-at-block minerBlockHeight userId) false))
-      (maturityHeight (+ (var-get tokenRewardMaturity) minerBlockHeight))
-      (vrfSample (unwrap! (contract-call? .citycoin-vrf get-random-uint-at-block maturityHeight) false))
-      (commitTotal (get-last-high-value-at-block minerBlockHeight))
-      (winningValue (mod vrfSample commitTotal))
-    )
-    (if (and (>= winningValue (get lowValue minerStats)) (<= winningValue (get highValue minerStats)))
-      (if testCanClaim (not (get rewardClaimed blockStats)) true)
-      false
-    )
-  )
-)
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; STACKING CONFIGURATION
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-constant MAX_REWARD_CYCLES u32)
 (define-constant REWARD_CYCLE_INDEXES (list u0 u1 u2 u3 u4 u5 u6 u7 u8 u9 u10 u11 u12 u13 u14 u15 u16 u17 u18 u19 u20 u21 u22 u23 u24 u25 u26 u27 u28 u29 u30 u31))
@@ -645,7 +566,9 @@
   )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; STACKING ACTIONS
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-public (stack-tokens (amountTokens uint) (lockPeriod uint))
   (let
@@ -673,11 +596,7 @@
     (asserts! (and (> lockPeriod u0) (<= lockPeriod MAX_REWARD_CYCLES))
       (err ERR_CANNOT_STACK))
     (asserts! (> amountTokens u0) (err ERR_CANNOT_STACK))
-    (try! (contract-call? .citycoin-token transfer amountTokens tx-sender (as-contract tx-sender) none))
-    (print {
-      firstCycle: targetCycle, 
-      lastCycle: (- (+ targetCycle lockPeriod) u1)
-    })
+    (try! (contract-call? .theopetra-reat-token transfer amountTokens tx-sender (as-contract tx-sender) none))
     (match (fold stack-tokens-closure REWARD_CYCLE_INDEXES (ok commitment))
       okValue (ok true)
       errValue (err errValue)
@@ -753,7 +672,9 @@
   )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; STACKING REWARD CLAIMS
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; calls function to claim stacking reward in active logic contract
 (define-public (claim-stacking-reward (targetCycle uint))
@@ -790,7 +711,7 @@
     )
     ;; send back tokens if user was eligible
     (if (> toReturn u0)
-      (try! (as-contract (contract-call? .citycoin-token transfer toReturn tx-sender user none)))
+      (try! (as-contract (contract-call? .theopetra-reat-token transfer toReturn tx-sender user none)))
       true
     )
     ;; send back rewards if user was eligible
@@ -802,7 +723,9 @@
   )
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; TOKEN CONFIGURATION
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; store block height at each halving, set by register-user in core contract
 (define-data-var coinbaseThreshold1 uint u0)
@@ -814,7 +737,7 @@
 (define-private (set-coinbase-thresholds)
   (let
     (
-      (coinbaseAmounts (try! (contract-call? .citycoin-token get-coinbase-thresholds)))
+      (coinbaseAmounts (try! (contract-call? .theopetra-reat-token get-coinbase-thresholds)))
     )
     (var-set coinbaseThreshold1 (get coinbaseThreshold1 coinbaseAmounts))
     (var-set coinbaseThreshold2 (get coinbaseThreshold2 coinbaseAmounts))
@@ -870,10 +793,12 @@
 
 ;; mint new tokens for claimant who won at given Stacks block height
 (define-private (mint-coinbase (recipient principal) (stacksHeight uint))
-  (as-contract (contract-call? .citycoin-token mint (get-coinbase-amount stacksHeight) recipient))
+  (as-contract (contract-call? .theopetra-reat-token mint (get-coinbase-amount stacksHeight) recipient))
 )
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; UTILITIES
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define-data-var shutdownHeight uint u0)
 (define-data-var isShutdown bool false)
@@ -905,56 +830,5 @@
 
 ;; checks if caller is Auth contract
 (define-private (is-authorized-auth)
-  (is-eq contract-caller .citycoin-auth)
-)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; FUNCTIONS ONLY USED DURING TESTS
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define-public (test-unsafe-set-city-wallet (newCityWallet principal))
-  (ok (var-set cityWallet newCityWallet))
-)
-
-(define-public (test-set-activation-threshold (newThreshold uint))
-  (ok (var-set activationThreshold newThreshold))
-)
-
-(define-public (test-generate-user-id (user principal))
-  (ok (get-or-create-user-id user))
-)
-
-(define-public (test-activate-contract)
-  (begin
-    ;; (var-set cityWallet 'STFCVYY1RJDNJHST7RRTPACYHVJQDJ7R1DWTQHQA)
-    (var-set activationThreshold u2)
-    (ok true)
-  )
-)
-
-(use-trait coreTrait .citycoin-core-trait.citycoin-core)
-
-(define-public (test-initialize-core (coreContract <coreTrait>))
-  (begin
-    (try! (contract-call? .citycoin-auth test-initialize-contracts coreContract))
-    (ok true)
-  )
-)
-
-(define-public (test-shutdown-contract (stacksHeight uint))
-  (begin
-    ;; set variables to disable mining/stacking in CORE
-    (var-set activationReached false)
-    (var-set shutdownHeight stacksHeight)
-    ;; set variable to allow for all stacking claims
-    (var-set isShutdown true)
-    (ok true)
-  )
-)
-
-(define-public (test-mint (amount uint) (recipient principal))
-  (begin
-    (as-contract (try! (contract-call? .citycoin-token mint amount recipient)))
-    (ok true)
-  )
+  (is-eq contract-caller .theopetra-reat-auth)
 )

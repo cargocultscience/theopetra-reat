@@ -23,11 +23,11 @@
   )
 )
 
-(use-trait coreTrait .citycoin-core-trait.citycoin-core)
+(use-trait coreTrait .theopetra-reat-core-trait.theopetra-reat-core)
 
 (define-public (test-initialize-core (coreContract <coreTrait>))
   (begin
-    (try! (contract-call? .citycoin-auth test-initialize-contracts coreContract))
+    (try! (contract-call? .theopetra-reat-auth test-initialize-contracts coreContract))
     (ok true)
   )
 )
@@ -45,7 +45,7 @@
 
 (define-public (test-mint (amount uint) (recipient principal))
   (begin
-    (as-contract (try! (contract-call? .citycoin-token mint amount recipient)))
+    (as-contract (try! (contract-call? .theopetra-reat-token mint amount recipient)))
     (ok true)
   )
 )

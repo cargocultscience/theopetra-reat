@@ -24,5 +24,5 @@
 )
 
 (define-public (test-set-active-core-contract)
-  (ok (var-set activeCoreContract .citycoin-core-v1))
+  (ok (var-set activeCoreContract .theopetra-reat-core-v1))
 )

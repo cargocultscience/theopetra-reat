@@ -1,4 +1,4 @@
-;; CITYCOINS TOKEN CONTRACT
+;; THEOPETRA REAT TOKEN CONTRACT
 
 ;; CONTRACT OWNER
 
@@ -6,8 +6,8 @@
 
 ;; TRAIT DEFINITIONS
 
-(impl-trait .citycoin-token-trait.citycoin-token)
-(use-trait coreTrait .citycoin-core-trait.citycoin-core)
+(impl-trait .theopetra-reat-token-trait.theopetra-reat-token)
+(use-trait coreTrait .theopetra-reat-core-trait.theopetra-reat-core)
 
 ;; ERROR CODES
 
@@ -83,7 +83,7 @@
 (define-public (activate-token (coreContract principal) (stacksHeight uint))
   (let
     (
-      (coreContractMap (try! (contract-call? .citycoin-auth get-core-contract-info coreContract)))
+      (coreContractMap (try! (contract-call? .theopetra-reat-auth get-core-contract-info coreContract)))
     )
     (asserts! (is-eq (get state coreContractMap) STATE_ACTIVE) (err ERR_UNAUTHORIZED))
     (asserts! (not (var-get tokenActivated)) (err ERR_TOKEN_ALREADY_ACTIVATED))
@@ -130,7 +130,7 @@
 (define-public (mint (amount uint) (recipient principal))
   (let
     (
-      (coreContract (try! (contract-call? .citycoin-auth get-core-contract-info contract-caller)))
+      (coreContract (try! (contract-call? .theopetra-reat-auth get-core-contract-info contract-caller)))
     )
     (ft-mint? citycoins amount recipient)
   )
@@ -145,7 +145,7 @@
 
 ;; checks if caller is Auth contract
 (define-private (is-authorized-auth)
-  (is-eq contract-caller .citycoin-auth)
+  (is-eq contract-caller .theopetra-reat-auth)
 )
 
 ;; SEND-MANY

@@ -17,8 +17,8 @@ beforeEach(() => {
   chain = ctx.chain;
   accounts = ctx.accounts;
   auth = ctx.models.get(AuthModel);
-  core = ctx.models.get(CoreModel, "citycoin-core-v1");
-  core2 = ctx.models.get(CoreModel, "citycoin-core-v2")
+  core = ctx.models.get(CoreModel, "theopetra-reat-core-v1");
+  core2 = ctx.models.get(CoreModel, "theopetra-reat-core-v2")
   token = ctx.models.get(TokenModel);
 })
 

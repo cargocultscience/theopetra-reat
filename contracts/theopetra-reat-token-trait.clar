@@ -1,6 +1,6 @@
-;; CITYCOIN TOKEN TRAIT
+;; THEOPETRA TOKEN TRAIT
 
-(define-trait citycoin-token
+(define-trait theopetra-reat-token
   (
 
     (activate-token (principal uint)

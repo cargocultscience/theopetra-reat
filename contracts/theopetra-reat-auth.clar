@@ -4,8 +4,8 @@
 
 ;; TRAIT DEFINITIONS
 
-(use-trait coreTrait .citycoin-core-trait.citycoin-core)
-(use-trait tokenTrait .citycoin-token-trait.citycoin-token)
+(use-trait coreTrait .theopetra-reat-core-trait.theopetra-reat-core)
+(use-trait tokenTrait .theopetra-reat-token-trait.theopetra-reat-token)
 
 ;; ERRORS
 
@@ -561,31 +561,3 @@
 (map-insert Approvers 'ST21HMSJATHZ888PD0S0SSTWP4J61TCRJYEVQ0STB true)
 (map-insert Approvers 'ST2QXSK64YQX3CQPC530K79XWQ98XFAM9W3XKEH3N true)
 (map-insert Approvers 'ST3DG3R65C9TTEEW5BC5XTSY0M1JM7NBE7GVWKTVJ true)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; FUNCTIONS ONLY USED DURING TESTS
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define-public (test-initialize-contracts (coreContract <coreTrait>))
-  (let
-    (
-      (coreContractAddress (contract-of coreContract))
-    )
-    ;; (asserts! (is-eq contract-caller CONTRACT_OWNER) (err ERR_UNAUTHORIZED))
-    (asserts! (not (var-get initialized)) (err ERR_UNAUTHORIZED))
-    (map-set CoreContracts
-      coreContractAddress
-      {
-        state: STATE_DEPLOYED,
-        startHeight: u0,
-        endHeight: u0
-      })
-    (try! (contract-call? coreContract set-city-wallet (var-get cityWallet)))
-    (var-set initialized true)
-    (ok true)
-  )
-)
-
-(define-public (test-set-active-core-contract)
-  (ok (var-set activeCoreContract .citycoin-core-v1))
-)

@@ -9,7 +9,7 @@ enum ErrCode {
 }
 
 export class TokenModel extends Model {
-  name = "citycoin-token";
+  name = "theopetra-reat-token";
   static readonly ErrCode = ErrCode;
 
   //////////////////////////////////////////////////
