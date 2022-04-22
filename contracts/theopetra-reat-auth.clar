@@ -537,7 +537,7 @@
 
 ;; initial value for city wallet
 ;; CPB TODO - use a different literal
-(define-data-var ecoSystemWallet principal 'STFCVYY1RJDNJHST7RRTPACYHVJQDJ7R1DWTQHQA)
+(define-data-var ecoSystemWallet principal 'ST3GVR64GEB8M0DAPH8ZNNKMEQ72QRMTY95WB9PDF)
 
 ;; returns city wallet principal
 (define-read-only (get-eco-system-wallet)
