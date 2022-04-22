@@ -18,6 +18,7 @@
         endHeight: u0
       })
     (try! (contract-call? coreContract set-non-profit-wallet (var-get nonProfitWallet)))
+    (try! (contract-call? coreContract set-eco-system-wallet (var-get ecoSystemWallet)))
     (var-set initialized true)
     (ok true)
   )

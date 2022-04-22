@@ -61,6 +61,50 @@ describe("[TheopetraREAT Core]", () => {
           .expectUint(CoreModel.ErrCode.ERR_UNAUTHORIZED);
       });
     });
+  })
+  
+  //////////////////////////////////////////////////
+  // ECO SYSTEM WALLET MANAGEMENT
+  //////////////////////////////////////////////////
+
+  describe("ECO SYSTEM WALLET MANAGEMENT", () => {
+    describe("get-eco-system-wallet()", () => {
+      it("returns current eco system wallet variable as contract address before initialization", () => {
+        // arrange
+        const result = core.getEcoSystemWallet().result;
+
+        // assert
+        result.expectPrincipal(core.address);
+      });
+      it("returns current eco system wallet variable as eco system wallet address after initialization", () => {
+        // arrange
+        const ecoSystemWallet = accounts.get("eco_system_wallet")!;
+        chain.mineBlock([
+          core.testInitializeCore(core.address),
+        ]);
+
+        const result = core.getEcoSystemWallet().result;
+
+        // assert
+        result.expectPrincipal(ecoSystemWallet.address);
+      });
+    });
+    describe("set-eco-system-wallet()", () => {
+      it("throws ERR_UNAUTHORIZED when called by non-eco system wallet", () => {
+        // arrange
+        const wallet = accounts.get("wallet_1")!;
+
+        // act
+        const receipt = chain.mineBlock([
+          core.setEcoSystemWallet(wallet, wallet),
+        ]).receipts[0];
+
+        // assert
+        receipt.result
+          .expectErr()
+          .expectUint(CoreModel.ErrCode.ERR_UNAUTHORIZED);
+      });
+    });
   });
 
   //////////////////////////////////////////////////
