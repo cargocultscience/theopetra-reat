@@ -2337,7 +2337,7 @@ describe("[TheopetraREAT Core]", () => {
         );
 
         receipt.events.expectSTXTransferEvent(
-          amountUstx * 0.7,
+          amountUstx * 0.85,
           core.address,
           stacker.address
         );

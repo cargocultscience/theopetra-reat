@@ -186,7 +186,7 @@
 ;; MINING CONFIGURATION
 
 ;; define split to custodied wallet address for the non profit
-(define-constant SPLIT_NON_PROFIT_PCT u30)
+(define-constant SPLIT_NON_PROFIT_PCT u15)
 
 ;; how long a miner must wait before block winner can claim their minted tokens
 (define-data-var tokenRewardMaturity uint u100)

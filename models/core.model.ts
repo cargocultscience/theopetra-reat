@@ -32,7 +32,7 @@ export class CoreModel extends Model {
   static readonly ACTIVATION_THRESHOLD = 20;
   static readonly TOKEN_HALVING_BLOCKS = 210000;
   static readonly REWARD_CYCLE_LENGTH = 2100;
-  static readonly SPLIT_NON_PROFIT_PCT = 0.3;
+  static readonly SPLIT_NON_PROFIT_PCT = 0.15;
   static readonly TOKEN_REWARD_MATURITY = 100;
   static readonly BONUS_PERIOD_LENGTH = 10000;
 
