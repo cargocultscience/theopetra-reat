@@ -18,41 +18,41 @@ beforeEach(() => {
   token = ctx.models.get(TokenModel);
 });
 
-describe("[CityCoin Core]", () => {
+describe("[TheopetraREAT Core]", () => {
   //////////////////////////////////////////////////
-  // CITY WALLET MANAGEMENT
+  // NON PROFIT WALLET MANAGEMENT
   //////////////////////////////////////////////////
 
-  describe("CITY WALLET MANAGEMENT", () => {
-    describe("get-city-wallet()", () => {
-      it("returns current city wallet variable as contract address before initialization", () => {
+  describe("NON PROFIT WALLET MANAGEMENT", () => {
+    describe("get-non-profit-wallet()", () => {
+      it("returns current non profit wallet variable as contract address before initialization", () => {
         // arrange
-        const result = core.getCityWallet().result;
+        const result = core.getNonProfitWallet().result;
 
         // assert
         result.expectPrincipal(core.address);
       });
-      it("returns current city wallet variable as city wallet address after initialization", () => {
+      it("returns current non profit wallet variable as non profit wallet address after initialization", () => {
         // arrange
-        const cityWallet = accounts.get("city_wallet")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
         chain.mineBlock([
           core.testInitializeCore(core.address),
         ]);
 
-        const result = core.getCityWallet().result;
+        const result = core.getNonProfitWallet().result;
 
         // assert
-        result.expectPrincipal(cityWallet.address);
+        result.expectPrincipal(nonProfitWallet.address);
       });
     });
-    describe("set-city-wallet()", () => {
-      it("throws ERR_UNAUTHORIZED when called by non-city wallet", () => {
+    describe("set-non-profit-wallet()", () => {
+      it("throws ERR_UNAUTHORIZED when called by non-non profit wallet", () => {
         // arrange
         const wallet = accounts.get("wallet_1")!;
 
         // act
         const receipt = chain.mineBlock([
-          core.setCityWallet(wallet, wallet),
+          core.setNonProfitWallet(wallet, wallet),
         ]).receipts[0];
 
         // assert
@@ -380,14 +380,14 @@ describe("[CityCoin Core]", () => {
           .expectUint(CoreModel.ErrCode.ERR_STACKING_NOT_AVAILABLE);
       });
 
-      it("succeeds and cause one stx_transfer_event to city-wallet during first cycle", () => {
+      it("succeeds and cause one stx_transfer_event to non profit wallet during first cycle", () => {
         // arrange
-        const cityWallet = accounts.get("city_wallet")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
         const miner = accounts.get("wallet_2")!;
         const amountUstx = 200;
         const block = chain.mineBlock([
           core.testInitializeCore(core.address),
-          core.unsafeSetCityWallet(cityWallet),
+          core.unsafeSetNonProfitWallet(nonProfitWallet),
           core.unsafeSetActivationThreshold(1),
           core.registerUser(miner),
         ]);
@@ -406,19 +406,19 @@ describe("[CityCoin Core]", () => {
         receipt.events.expectSTXTransferEvent(
           amountUstx,
           miner.address,
-          cityWallet.address
+          nonProfitWallet.address
         );
       });
 
-      it("succeeds and cause one stx_transfer event to city-wallet and one to stacker while mining in cycle with stackers", () => {
+      it("succeeds and cause one stx_transfer event to non profit wallet and one to stacker while mining in cycle with stackers", () => {
         // arrange
-        const cityWallet = accounts.get("city_wallet")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
         const miner = accounts.get("wallet_2")!;
         const amountUstx = 200;
         const amountTokens = 500;
         const block = chain.mineBlock([
           core.testInitializeCore(core.address),
-          core.unsafeSetCityWallet(cityWallet),
+          core.unsafeSetNonProfitWallet(nonProfitWallet),
           token.ftMint(amountTokens, miner),
           core.unsafeSetActivationThreshold(1),
           core.registerUser(miner),
@@ -443,13 +443,13 @@ describe("[CityCoin Core]", () => {
         assertEquals(receipt.events.length, 2);
 
         receipt.events.expectSTXTransferEvent(
-          amountUstx * CoreModel.SPLIT_CITY_PCT,
+          amountUstx * CoreModel.SPLIT_NON_PROFIT_PCT,
           miner.address,
-          cityWallet.address
+          nonProfitWallet.address
         );
 
         receipt.events.expectSTXTransferEvent(
-          amountUstx * (1 - CoreModel.SPLIT_CITY_PCT),
+          amountUstx * (1 - CoreModel.SPLIT_NON_PROFIT_PCT),
           miner.address,
           core.address
         );
@@ -676,7 +676,7 @@ describe("[CityCoin Core]", () => {
         // arrange
         const miner = accounts.get("wallet_1")!;
         const amounts = [1];
-        const cityWallet = accounts.get("city_wallet")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
         const setupBlock = chain.mineBlock([
           core.testInitializeCore(core.address),
           core.unsafeSetActivationThreshold(1),
@@ -698,7 +698,7 @@ describe("[CityCoin Core]", () => {
         receipt.events.expectSTXTransferEvent(
           amounts.reduce((sum, amount) => sum + amount, 0),
           miner.address,
-          cityWallet.address
+          nonProfitWallet.address
         );
       });
 
@@ -706,7 +706,7 @@ describe("[CityCoin Core]", () => {
         // arrange
         const miner = accounts.get("wallet_1")!;
         const amounts = [1, 2, 200, 89, 3423];
-        const cityWallet = accounts.get("city_wallet")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
         const setupBlock = chain.mineBlock([
           core.testInitializeCore(core.address),
           core.unsafeSetActivationThreshold(1),
@@ -728,7 +728,7 @@ describe("[CityCoin Core]", () => {
         receipt.events.expectSTXTransferEvent(
           amounts.reduce((sum, amount) => sum + amount, 0),
           miner.address,
-          cityWallet.address
+          nonProfitWallet.address
         );
       });
 
@@ -736,11 +736,11 @@ describe("[CityCoin Core]", () => {
         // arrange
         const miner = accounts.get("wallet_1")!;
         const amounts = [10000];
-        const cityWallet = accounts.get("city_wallet")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
         const amountTokens = 500;
         const block = chain.mineBlock([
           core.testInitializeCore(core.address),
-          core.unsafeSetCityWallet(cityWallet),
+          core.unsafeSetNonProfitWallet(nonProfitWallet),
           token.ftMint(amountTokens, miner),
           core.unsafeSetActivationThreshold(1),
           core.registerUser(miner),
@@ -767,13 +767,13 @@ describe("[CityCoin Core]", () => {
         const totalAmount = amounts.reduce((sum, amount) => sum + amount, 0);
 
         receipt.events.expectSTXTransferEvent(
-          totalAmount * CoreModel.SPLIT_CITY_PCT,
+          totalAmount * CoreModel.SPLIT_NON_PROFIT_PCT,
           miner.address,
-          cityWallet.address
+          nonProfitWallet.address
         );
 
         receipt.events.expectSTXTransferEvent(
-          totalAmount * (1 - CoreModel.SPLIT_CITY_PCT),
+          totalAmount * (1 - CoreModel.SPLIT_NON_PROFIT_PCT),
           miner.address,
           core.address
         );
@@ -783,11 +783,11 @@ describe("[CityCoin Core]", () => {
         // arrange
         const miner = accounts.get("wallet_1")!;
         const amounts = [100, 200, 300];
-        const cityWallet = accounts.get("city_wallet")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
         const amountTokens = 500;
         const block = chain.mineBlock([
           core.testInitializeCore(core.address),
-          core.unsafeSetCityWallet(cityWallet),
+          core.unsafeSetNonProfitWallet(nonProfitWallet),
           token.ftMint(amountTokens, miner),
           core.unsafeSetActivationThreshold(1),
           core.registerUser(miner),
@@ -814,13 +814,13 @@ describe("[CityCoin Core]", () => {
         const totalAmount = amounts.reduce((sum, amount) => sum + amount, 0);
 
         receipt.events.expectSTXTransferEvent(
-          totalAmount * CoreModel.SPLIT_CITY_PCT,
+          totalAmount * CoreModel.SPLIT_NON_PROFIT_PCT,
           miner.address,
-          cityWallet.address
+          nonProfitWallet.address
         );
 
         receipt.events.expectSTXTransferEvent(
-          totalAmount * (1 - CoreModel.SPLIT_CITY_PCT),
+          totalAmount * (1 - CoreModel.SPLIT_NON_PROFIT_PCT),
           miner.address,
           core.address
         );

@@ -23,7 +23,7 @@
       (response bool uint)
     )
 
-    (set-city-wallet (principal)
+    (set-non-profit-wallet (principal)
       (response bool uint)
     )
     

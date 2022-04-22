@@ -371,7 +371,7 @@
 ;; - check that deployer is calling this function
 ;; - check this contract is not activated already (one-time use)
 ;; - set initial map value for core contract v1
-;; - set cityWallet in core contract
+;; - set nonProfitWallet in core contract
 ;; - set intialized true
 (define-public (initialize-contracts (coreContract <coreTrait>))
   (let
@@ -387,7 +387,7 @@
         startHeight: u0,
         endHeight: u0
       })
-    (try! (contract-call? coreContract set-city-wallet (var-get cityWallet)))
+    (try! (contract-call? coreContract set-non-profit-wallet (var-get nonProfitWallet)))
     (var-set initialized true)
     (ok true)
   )
@@ -446,7 +446,7 @@
       })
     (var-set activeCoreContract newContractAddress)
     (try! (contract-call? oldContract shutdown-contract block-height))
-    (try! (contract-call? newContract set-city-wallet (var-get cityWallet)))
+    (try! (contract-call? newContract set-non-profit-wallet (var-get nonProfitWallet)))
     (ok true)
   )
 )
@@ -479,7 +479,7 @@
       })
     (var-set activeCoreContract newContractAddress)
     (try! (contract-call? oldContract shutdown-contract block-height))
-    (try! (contract-call? newContract set-city-wallet (var-get cityWallet)))
+    (try! (contract-call? newContract set-non-profit-wallet (var-get nonProfitWallet)))
     (as-contract (mark-job-as-executed jobId))
   )
 )
@@ -487,15 +487,15 @@
 ;; CITY WALLET MANAGEMENT
 
 ;; initial value for city wallet
-(define-data-var cityWallet principal 'STFCVYY1RJDNJHST7RRTPACYHVJQDJ7R1DWTQHQA)
+(define-data-var nonProfitWallet principal 'STFCVYY1RJDNJHST7RRTPACYHVJQDJ7R1DWTQHQA)
 
 ;; returns city wallet principal
-(define-read-only (get-city-wallet)
-  (ok (var-get cityWallet))
+(define-read-only (get-non-profit-wallet)
+  (ok (var-get nonProfitWallet))
 )
  
 ;; protected function to update city wallet variable
-(define-public (set-city-wallet (targetContract <coreTrait>) (newCityWallet principal))
+(define-public (set-non-profit-wallet (targetContract <coreTrait>) (newNonProfitWallet principal))
   (let
     (
       (coreContractAddress (contract-of targetContract))
@@ -503,30 +503,30 @@
     )
     (asserts! (is-authorized-city) (err ERR_UNAUTHORIZED))
     (asserts! (is-eq coreContractAddress (var-get activeCoreContract)) (err ERR_UNAUTHORIZED))
-    (var-set cityWallet newCityWallet)
-    (try! (contract-call? targetContract set-city-wallet newCityWallet))
+    (var-set nonProfitWallet newNonProfitWallet)
+    (try! (contract-call? targetContract set-non-profit-wallet newNonProfitWallet))
     (ok true)
   )
 )
 
-(define-public (execute-set-city-wallet-job (jobId uint) (targetContract <coreTrait>))
+(define-public (execute-set-non-profit-wallet-job (jobId uint) (targetContract <coreTrait>))
   (let
     (
       (coreContractAddress (contract-of targetContract))
       (coreContract (unwrap! (map-get? CoreContracts coreContractAddress) (err ERR_CORE_CONTRACT_NOT_FOUND)))
-      (newCityWallet (unwrap! (get-principal-value-by-name jobId "newCityWallet") (err ERR_UNKNOWN_ARGUMENT)))
+      (newNonProfitWallet (unwrap! (get-principal-value-by-name jobId "newNonProfitWallet") (err ERR_UNKNOWN_ARGUMENT)))
     )
     (asserts! (is-approver contract-caller) (err ERR_UNAUTHORIZED))
     (asserts! (is-eq coreContractAddress (var-get activeCoreContract)) (err ERR_UNAUTHORIZED))
-    (var-set cityWallet newCityWallet)
-    (try! (contract-call? targetContract set-city-wallet newCityWallet))
+    (var-set nonProfitWallet newNonProfitWallet)
+    (try! (contract-call? targetContract set-non-profit-wallet newNonProfitWallet))
     (as-contract (mark-job-as-executed jobId))
   )
 )
 
 ;; check if contract caller is city wallet
 (define-private (is-authorized-city)
-  (is-eq contract-caller (var-get cityWallet))
+  (is-eq contract-caller (var-get nonProfitWallet))
 )
 
 ;; TOKEN MANAGEMENT

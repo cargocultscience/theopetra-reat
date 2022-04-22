@@ -17,7 +17,7 @@
         startHeight: u0,
         endHeight: u0
       })
-    (try! (contract-call? coreContract set-city-wallet (var-get cityWallet)))
+    (try! (contract-call? coreContract set-non-profit-wallet (var-get nonProfitWallet)))
     (var-set initialized true)
     (ok true)
   )

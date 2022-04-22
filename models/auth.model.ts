@@ -192,18 +192,18 @@ export class AuthModel extends Model {
     );
   }
 
-  getCityWallet() {
-    return this.callReadOnly("get-city-wallet");
+  getNonProfitWallet() {
+    return this.callReadOnly("get-non-profit-wallet");
   }
 
-  setCityWallet(
+  setNonProfitWallet(
     requestor: string,
-    newCityWallet: Account,
+    newNonProfitWallet: Account,
     sender: Account
   ): Tx {
     return this.callPublic(
-      "set-city-wallet",
-      [types.principal(requestor), types.principal(newCityWallet.address)],
+      "set-non-profit-wallet",
+      [types.principal(requestor), types.principal(newNonProfitWallet.address)],
       sender.address
     );
   }
@@ -225,13 +225,13 @@ export class AuthModel extends Model {
     );
   }
 
-  executeSetCityWalletJob(
+  executeSetNonProfitWalletJob(
     jobId: number,
     targetContract: string,
     sender: Account
   ): Tx {
     return this.callPublic(
-      "execute-set-city-wallet-job",
+      "execute-set-non-profit-wallet-job",
       [types.uint(jobId), types.principal(targetContract)],
       sender.address
     );

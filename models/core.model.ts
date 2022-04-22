@@ -32,24 +32,24 @@ export class CoreModel extends Model {
   static readonly ACTIVATION_THRESHOLD = 20;
   static readonly TOKEN_HALVING_BLOCKS = 210000;
   static readonly REWARD_CYCLE_LENGTH = 2100;
-  static readonly SPLIT_CITY_PCT = 0.3;
+  static readonly SPLIT_NON_PROFIT_PCT = 0.3;
   static readonly TOKEN_REWARD_MATURITY = 100;
   static readonly BONUS_PERIOD_LENGTH = 10000;
 
   //////////////////////////////////////////////////
-  // CITY WALLET MANAGEMENT
+  // NON PROFIT WALLET MANAGEMENT
   //////////////////////////////////////////////////
 
-  setCityWallet(newCityWallet: Account, sender: Account): Tx {
+  setNonProfitWallet(newNonProfitWallet: Account, sender: Account): Tx {
     return this.callPublic(
-      "set-city-wallet",
-      [types.principal(newCityWallet.address)],
+      "set-non-profit-wallet",
+      [types.principal(newNonProfitWallet.address)],
       sender.address
     );
   }
 
-  getCityWallet(): ReadOnlyFn {
-    return this.callReadOnly("get-city-wallet");
+  getNonProfitWallet(): ReadOnlyFn {
+    return this.callReadOnly("get-non-profit-wallet");
   }
 
   //////////////////////////////////////////////////
@@ -215,10 +215,10 @@ export class CoreModel extends Model {
   // TESTING ONLY
   //////////////////////////////////////////////////
 
-  unsafeSetCityWallet(newCityWallet: Account): Tx {
+  unsafeSetNonProfitWallet(newNonProfitWallet: Account): Tx {
     return this.callPublic(
-      "test-unsafe-set-city-wallet",
-      [types.principal(newCityWallet.address)],
+      "test-unsafe-set-non-profit-wallet",
+      [types.principal(newNonProfitWallet.address)],
       this.deployer.address
     );
   }

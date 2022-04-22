@@ -3,8 +3,8 @@
 ;; FUNCTIONS ONLY USED DURING TESTS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define-public (test-unsafe-set-city-wallet (newCityWallet principal))
-  (ok (var-set cityWallet newCityWallet))
+(define-public (test-unsafe-set-city-wallet (newNonProfitWallet principal))
+  (ok (var-set nonProfitWallet newNonProfitWallet))
 )
 
 (define-public (test-set-activation-threshold (newThreshold uint))
@@ -17,7 +17,7 @@
 
 (define-public (test-activate-contract)
   (begin
-    ;; (var-set cityWallet 'STFCVYY1RJDNJHST7RRTPACYHVJQDJ7R1DWTQHQA)
+    ;; (var-set nonProfitWallet 'STFCVYY1RJDNJHST7RRTPACYHVJQDJ7R1DWTQHQA)
     (var-set activationThreshold u2)
     (ok true)
   )

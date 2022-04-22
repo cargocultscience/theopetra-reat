@@ -32,18 +32,18 @@
 ;; CITY WALLET MANAGEMENT
 
 ;; initial value for city wallet, set to this contract until initialized
-(define-data-var cityWallet principal .theopetra-reat-core-v1)
+(define-data-var nonProfitWallet principal .theopetra-reat-core-v1)
 
 ;; returns set city wallet principal
-(define-read-only (get-city-wallet)
-  (var-get cityWallet)
+(define-read-only (get-non-profit-wallet)
+  (var-get nonProfitWallet)
 )
  
 ;; protected function to update city wallet variable
-(define-public (set-city-wallet (newCityWallet principal))
+(define-public (set-non-profit-wallet (newNonProfitWallet principal))
   (begin
     (asserts! (is-authorized-auth) (err ERR_UNAUTHORIZED))
-    (ok (var-set cityWallet newCityWallet))
+    (ok (var-set nonProfitWallet newNonProfitWallet))
   )
 )
 
@@ -298,7 +298,7 @@
           (try! (stx-transfer? (get toStackers okReturn ) tx-sender (as-contract tx-sender)))
           false
         )
-        (try! (stx-transfer? (get toCity okReturn) tx-sender (var-get cityWallet)))
+        (try! (stx-transfer? (get toCity okReturn) tx-sender (var-get nonProfitWallet)))
         (print { 
           firstBlock: block-height, 
           lastBlock: (- (+ block-height (len amounts)) u1) 
@@ -377,7 +377,7 @@
       (try! (stx-transfer? toStackers tx-sender (as-contract tx-sender)))
       false
     )
-    (try! (stx-transfer? toCity tx-sender (var-get cityWallet)))
+    (try! (stx-transfer? toCity tx-sender (var-get nonProfitWallet)))
     (ok true)
   )
 )
@@ -895,7 +895,7 @@
 
 ;; check if contract caller is city wallet
 (define-private (is-authorized-city)
-  (is-eq contract-caller (var-get cityWallet))
+  (is-eq contract-caller (var-get nonProfitWallet))
 )
 
 ;; check if contract caller is contract owner

@@ -1177,7 +1177,7 @@ describe("[CityCoin Auth]", () => {
       });
       it("succeeds and updates core contract map and active variable", () => {
         // arrange
-        const sender = accounts.get("city_wallet")!;
+        const sender = accounts.get("non_profit_wallet")!;
         const oldContract = core.address;
         const newContract = core2.address;
 
@@ -1303,30 +1303,30 @@ describe("[CityCoin Auth]", () => {
   });
 
   //////////////////////////////////////////////////
-  // CITY WALLET MANAGEMENT
+  // NON PROFIT WALLET MANAGEMENT
   //////////////////////////////////////////////////
   describe("CITY WALLET MANAGEMENT", () => {
-    describe("get-city-wallet()", () => {
-      it("succeeds and returns city wallet", () => {
+    describe("get-non-profit-wallet()", () => {
+      it("succeeds and returns non-profit wallet", () => {
         // arrange
-        const cityWallet = accounts.get("city_wallet")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
         // act
-        const result = auth.getCityWallet().result;
+        const result = auth.getNonProfitWallet().result;
         // assert
-        result.expectOk().expectPrincipal(cityWallet.address);
+        result.expectOk().expectPrincipal(nonProfitWallet.address);
       });
     });
     describe("set-city-wallet()", () => {
       it("throws ERR_CORE_CONTRACT_NOT_FOUND if principal not found in core contracts map", () => {
         // arrange
-        const cityWallet = accounts.get("city_wallet")!;
-        const newCityWallet = accounts.get("wallet_2")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
+        const newNonProfitWallet = accounts.get("wallet_2")!;
         // act
         const receipt = chain.mineBlock([
-          auth.setCityWallet(
+          auth.setNonProfitWallet(
             core.address,
-            newCityWallet,
-            cityWallet
+            newNonProfitWallet,
+            nonProfitWallet
           ),
         ]).receipts[0];
         // assert
@@ -1335,18 +1335,18 @@ describe("[CityCoin Auth]", () => {
           .expectUint(AuthModel.ErrCode.ERR_CORE_CONTRACT_NOT_FOUND);
       });
 
-      it("throws ERR_UNAUTHORIZED if not called by city wallet", () => {
+      it("throws ERR_UNAUTHORIZED if not called by non profit wallet", () => {
         // arrange
         const sender = accounts.get("wallet_1")!;
-        const newCityWallet = accounts.get("wallet_2")!;
+        const newNonProfitWallet = accounts.get("wallet_2")!;
         chain.mineBlock([
           core.testInitializeCore(core.address),
         ]);
         // act
         const receipt = chain.mineBlock([
-          auth.setCityWallet(
+          auth.setNonProfitWallet(
             core.address,
-            newCityWallet,
+            newNonProfitWallet,
             sender
           ),
         ]).receipts[0];
@@ -1358,17 +1358,17 @@ describe("[CityCoin Auth]", () => {
 
       it("throws ERR_UNAUTHORIZED if not called by the active core contract", () => {
         // arrange
-        const cityWallet = accounts.get("city_wallet")!;
-        const newCityWallet = accounts.get("wallet_2")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
+        const newNonProfitWallet = accounts.get("wallet_2")!;
         chain.mineBlock([
           core.testInitializeCore(core.address),
         ]);
         // act
         const receipt = chain.mineBlock([
-          auth.setCityWallet(
+          auth.setNonProfitWallet(
             core.address,
-            newCityWallet,
-            cityWallet
+            newNonProfitWallet,
+            nonProfitWallet
           ),
         ]).receipts[0];
         // assert
@@ -1377,33 +1377,33 @@ describe("[CityCoin Auth]", () => {
           .expectUint(AuthModel.ErrCode.ERR_UNAUTHORIZED);
       });
 
-      it("successfully change city walled when called by current city wallet", () => {
+      it("successfully change city wallet when called by current non profit wallet", () => {
         // arrange
-        const cityWallet = accounts.get("city_wallet")!;
-        const newCityWallet = accounts.get("wallet_2")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
+        const newNonProfitWallet = accounts.get("wallet_2")!;
         chain.mineBlock([
           core.testInitializeCore(core.address),
-          auth.testSetActiveCoreContract(cityWallet),
+          auth.testSetActiveCoreContract(nonProfitWallet),
         ]);
 
         // act
         const receipt = chain.mineBlock([
-          auth.setCityWallet(
+          auth.setNonProfitWallet(
             core.address,
-            newCityWallet,
-            cityWallet
+            newNonProfitWallet,
+            nonProfitWallet
           ),
         ]).receipts[0];
 
         // assert
         receipt.result.expectOk().expectBool(true);
         core
-          .getCityWallet()
-          .result.expectPrincipal(newCityWallet.address);
+          .getNonProfitWallet()
+          .result.expectPrincipal(newNonProfitWallet.address);
         auth
-          .getCityWallet()
+          .getNonProfitWallet()
           .result.expectOk()
-          .expectPrincipal(newCityWallet.address);
+          .expectPrincipal(newNonProfitWallet.address);
       });
     });
     describe("execute-set-city-wallet-job()", () => {
@@ -1414,23 +1414,23 @@ describe("[CityCoin Auth]", () => {
         const approver1 = accounts.get("wallet_2")!;
         const approver2 = accounts.get("wallet_3")!;
         const approver3 = accounts.get("wallet_4")!;
-        const cityWallet = accounts.get("city_wallet")!;
-        const newCityWallet = accounts.get("wallet_2")!;
+        const nonProfitWallet = accounts.get("non_profit_wallet")!;
+        const newNonProfitWallet = accounts.get("wallet_2")!;
         chain.mineBlock([
           core.testInitializeCore(core.address),
-          auth.testSetActiveCoreContract(cityWallet),
+          auth.testSetActiveCoreContract(nonProfitWallet),
         ]);
 
         chain.mineBlock([
           auth.createJob(
-            "update city wallet 1",
+            "update non profit wallet wallet 1",
             auth.address,
             sender
           ),
           auth.addPrincipalArgument(
             jobId,
-            "newCityWallet",
-            newCityWallet.address,
+            "newNonProfitWallet",
+            newNonProfitWallet.address,
             sender
           ),
           auth.activateJob(jobId, sender),
@@ -1441,7 +1441,7 @@ describe("[CityCoin Auth]", () => {
 
         // act
         const receipt = chain.mineBlock([
-          auth.executeSetCityWalletJob(
+          auth.executeSetNonProfitWalletJob(
             jobId,
             core.address,
             approver1
@@ -1452,8 +1452,8 @@ describe("[CityCoin Auth]", () => {
         receipt.result.expectOk().expectBool(true);
 
         core
-          .getCityWallet()
-          .result.expectPrincipal(newCityWallet.address);
+          .getNonProfitWallet()
+          .result.expectPrincipal(newNonProfitWallet.address);
       });
     });
   });
@@ -1497,7 +1497,7 @@ describe("[CityCoin Auth]", () => {
       });
       it("succeeds and changes token uri to none if no new value is provided", () => {
         // arrange
-        const sender = accounts.get("city_wallet")!;
+        const sender = accounts.get("non_profit_wallet")!;
         // act
         const block = chain.mineBlock([
           auth.setTokenUri(sender, token.address),
@@ -1512,7 +1512,7 @@ describe("[CityCoin Auth]", () => {
       });
       it("succeeds and changes token uri to new value if provided", () => {
         // arrange
-        const sender = accounts.get("city_wallet")!;
+        const sender = accounts.get("non_profit_wallet")!;
         const newUri = "http://something-something.com";
         // act
         const block = chain.mineBlock([
