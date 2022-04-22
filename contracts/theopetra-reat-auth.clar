@@ -1,4 +1,4 @@
-;; CITYCOIN AUTH CONTRACT
+;; THEOPETRA REAT AUTH CONTRACT
 
 (define-constant CONTRACT_OWNER tx-sender)
 
@@ -490,15 +490,15 @@
 
 ;; NON PROFIT WALLET MANAGEMENT
 
-;; initial value for city wallet
+;; initial value for non profit wallet
 (define-data-var nonProfitWallet principal 'STFCVYY1RJDNJHST7RRTPACYHVJQDJ7R1DWTQHQA)
 
-;; returns city wallet principal
+;; returns non profit wallet principal
 (define-read-only (get-non-profit-wallet)
   (ok (var-get nonProfitWallet))
 )
  
-;; protected function to update city wallet variable
+;; protected function to update non profit wallet variable
 (define-public (set-non-profit-wallet (targetContract <coreTrait>) (newNonProfitWallet principal))
   (let
     (
@@ -535,11 +535,10 @@
 
 ;; ECO SYSTEM WALLET MANAGEMENT
 
-;; initial value for city wallet
-;; CPB TODO - use a different literal
+;; initial value for eco system wallet
 (define-data-var ecoSystemWallet principal 'ST3GVR64GEB8M0DAPH8ZNNKMEQ72QRMTY95WB9PDF)
 
-;; returns city wallet principal
+;; returns eco system wallet principal
 (define-read-only (get-eco-system-wallet)
   (ok (var-get ecoSystemWallet))
 )
@@ -574,7 +573,7 @@
   )
 )
 
-;; check if contract caller is city wallet
+;; check if contract caller is eco system wallet
 (define-private (is-authorized-eco-system)
   (is-eq contract-caller (var-get ecoSystemWallet))
 )

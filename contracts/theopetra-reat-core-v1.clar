@@ -1,4 +1,4 @@
-;; CITYCOINS CORE CONTRACT
+;; THEOPETRA REAT CORE CONTRACT
 
 ;; GENERAL CONFIGURATION
 
@@ -26,7 +26,6 @@
 (define-constant ERR_CANNOT_STACK u1016)
 (define-constant ERR_REWARD_CYCLE_NOT_COMPLETED u1017)
 (define-constant ERR_NOTHING_TO_REDEEM u1018)
-(define-constant ERR_UNABLE_TO_FIND_CITY_WALLET u1019)
 (define-constant ERR_CLAIM_IN_WRONG_CONTRACT u1020)
 
 ;; NON PROFIT WALLET MANAGEMENT
@@ -186,8 +185,8 @@
 
 ;; MINING CONFIGURATION
 
-;; define split to custodied wallet address for the city
-(define-constant SPLIT_CITY_PCT u30)
+;; define split to custodied wallet address for the non profit
+(define-constant SPLIT_NON_PROFIT_PCT u30)
 
 ;; how long a miner must wait before block winner can claim their minted tokens
 (define-data-var tokenRewardMaturity uint u100)
@@ -195,7 +194,7 @@
 ;; At a given Stacks block height:
 ;; - how many miners were there
 ;; - what was the total amount submitted
-;; - what was the total amount submitted to the city
+;; - what was the total amount submitted to the non profit
 ;; - what was the total amount submitted to Stackers
 ;; - was the block reward claimed
 (define-map MiningStatsAtBlock
@@ -203,7 +202,7 @@
   {
     minersCount: uint,
     amount: uint,
-    amountToCity: uint,
+    amountToNonProfit: uint,
     amountToStackers: uint,
     rewardClaimed: bool
   }
@@ -220,7 +219,7 @@
   (default-to {
       minersCount: u0,
       amount: u0,
-      amountToCity: u0,
+      amountToNonProfit: u0,
       amountToStackers: u0,
       rewardClaimed: false
     }
@@ -308,15 +307,15 @@
   (begin
     (asserts! (get-activation-status) (err ERR_CONTRACT_NOT_ACTIVATED))
     (asserts! (> (len amounts) u0) (err ERR_INSUFFICIENT_COMMITMENT))
-    (match (fold mine-single amounts (ok { userId: (get-or-create-user-id tx-sender), toStackers: u0, toCity: u0, stacksHeight: block-height }))
+    (match (fold mine-single amounts (ok { userId: (get-or-create-user-id tx-sender), toStackers: u0, toNonProfit: u0, stacksHeight: block-height }))
       okReturn 
       (begin
-        (asserts! (>= (stx-get-balance tx-sender) (+ (get toStackers okReturn) (get toCity okReturn))) (err ERR_INSUFFICIENT_BALANCE))
+        (asserts! (>= (stx-get-balance tx-sender) (+ (get toStackers okReturn) (get toNonProfit okReturn))) (err ERR_INSUFFICIENT_BALANCE))
         (if (> (get toStackers okReturn ) u0)
           (try! (stx-transfer? (get toStackers okReturn ) tx-sender (as-contract tx-sender)))
           false
         )
-        (try! (stx-transfer? (get toCity okReturn) tx-sender (var-get nonProfitWallet)))
+        (try! (stx-transfer? (get toNonProfit okReturn) tx-sender (var-get nonProfitWallet)))
         (print { 
           firstBlock: block-height, 
           lastBlock: (- (+ block-height (len amounts)) u1) 
@@ -334,7 +333,7 @@
     { 
       userId: uint,
       toStackers: uint,
-      toCity: uint,
+      toNonProfit: uint,
       stacksHeight: uint
     }
     uint
@@ -346,21 +345,21 @@
         (stacksHeight (get stacksHeight okReturn))
         (rewardCycle (default-to u0 (get-reward-cycle stacksHeight)))
         (stackingActive (stacking-active-at-cycle rewardCycle))
-        (toCity
+        (toNonProfit
           (if stackingActive
-            (/ (* SPLIT_CITY_PCT amountUstx) u100)
+            (/ (* SPLIT_NON_PROFIT_PCT amountUstx) u100)
             amountUstx
           )
         )
-        (toStackers (- amountUstx toCity))
+        (toStackers (- amountUstx toNonProfit))
       )
       (asserts! (not (has-mined-at-block stacksHeight (get userId okReturn))) (err ERR_USER_ALREADY_MINED))
       (asserts! (> amountUstx u0) (err ERR_INSUFFICIENT_COMMITMENT))
-      (try! (set-tokens-mined (get userId okReturn) stacksHeight amountUstx toStackers toCity))
+      (try! (set-tokens-mined (get userId okReturn) stacksHeight amountUstx toStackers toNonProfit))
       (ok (merge okReturn 
         {
           toStackers: (+ (get toStackers okReturn) toStackers),
-          toCity: (+ (get toCity okReturn) toCity),
+          toNonProfit: (+ (get toNonProfit okReturn) toNonProfit),
           stacksHeight: (+ stacksHeight u1)
         }
       ))
@@ -374,19 +373,19 @@
     (
       (rewardCycle (default-to u0 (get-reward-cycle stacksHeight)))
       (stackingActive (stacking-active-at-cycle rewardCycle))
-      (toCity
+      (toNonProfit
         (if stackingActive
-          (/ (* SPLIT_CITY_PCT amountUstx) u100)
+          (/ (* SPLIT_NON_PROFIT_PCT amountUstx) u100)
           amountUstx
         )
       )
-      (toStackers (- amountUstx toCity))
+      (toStackers (- amountUstx toNonProfit))
     )
     (asserts! (get-activation-status) (err ERR_CONTRACT_NOT_ACTIVATED))
     (asserts! (not (has-mined-at-block stacksHeight userId)) (err ERR_USER_ALREADY_MINED))
     (asserts! (> amountUstx u0) (err ERR_INSUFFICIENT_COMMITMENT))
     (asserts! (>= (stx-get-balance tx-sender) amountUstx) (err ERR_INSUFFICIENT_BALANCE))
-    (try! (set-tokens-mined userId stacksHeight amountUstx toStackers toCity))
+    (try! (set-tokens-mined userId stacksHeight amountUstx toStackers toNonProfit))
     (if (is-some memo)
       (print memo)
       none
@@ -395,12 +394,12 @@
       (try! (stx-transfer? toStackers tx-sender (as-contract tx-sender)))
       false
     )
-    (try! (stx-transfer? toCity tx-sender (var-get nonProfitWallet)))
+    (try! (stx-transfer? toNonProfit tx-sender (var-get nonProfitWallet)))
     (ok true)
   )
 )
 
-(define-private (set-tokens-mined (userId uint) (stacksHeight uint) (amountUstx uint) (toStackers uint) (toCity uint))
+(define-private (set-tokens-mined (userId uint) (stacksHeight uint) (amountUstx uint) (toStackers uint) (toNonProfit uint))
   (let
     (
       (blockStats (get-mining-stats-at-block-or-default stacksHeight))
@@ -415,7 +414,7 @@
       {
         minersCount: newMinersCount,
         amount: (+ (get amount blockStats) amountUstx),
-        amountToCity: (+ (get amountToCity blockStats) toCity),
+        amountToNonProfit: (+ (get amountToNonProfit blockStats) toNonProfit),
         amountToStackers: (+ (get amountToStackers blockStats) toStackers),
         rewardClaimed: false
       }
@@ -495,7 +494,7 @@
       {
         minersCount: (get minersCount blockStats),
         amount: (get amount blockStats),
-        amountToCity: (get amountToCity blockStats),
+        amountToNonProfit: (get amountToNonProfit blockStats),
         amountToStackers: (get amountToStackers blockStats),
         rewardClaimed: true
       }
@@ -916,7 +915,7 @@
   (is-eq contract-caller (var-get nonProfitWallet))
 )
 
-;; check if contract caller is city wallet
+;; check if contract caller is non profit wallet
 (define-private (is-authorized-eco-system)
   (is-eq contract-caller (var-get ecoSystemWallet))
 )
