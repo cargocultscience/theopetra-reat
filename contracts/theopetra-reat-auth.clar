@@ -372,6 +372,7 @@
 ;; - check this contract is not activated already (one-time use)
 ;; - set initial map value for core contract v1
 ;; - set nonProfitWallet in core contract
+;; - set ecoSystemWallet in core contract
 ;; - set intialized true
 (define-public (initialize-contracts (coreContract <coreTrait>))
   (let
@@ -388,6 +389,7 @@
         endHeight: u0
       })
     (try! (contract-call? coreContract set-non-profit-wallet (var-get nonProfitWallet)))
+    (try! (contract-call? coreContract set-eco-system-wallet (var-get ecoSystemWallet)))
     (var-set initialized true)
     (ok true)
   )
@@ -429,7 +431,7 @@
       (newContractAddress (contract-of newContract))
     )
     (asserts! (not (is-eq oldContractAddress newContractAddress)) (err ERR_UNAUTHORIZED))
-    (asserts! (is-authorized-city) (err ERR_UNAUTHORIZED))
+    (asserts! (is-authorized-non-profit) (err ERR_UNAUTHORIZED))
     (map-set CoreContracts
       oldContractAddress
       {
@@ -447,6 +449,7 @@
     (var-set activeCoreContract newContractAddress)
     (try! (contract-call? oldContract shutdown-contract block-height))
     (try! (contract-call? newContract set-non-profit-wallet (var-get nonProfitWallet)))
+    (try! (contract-call? newContract set-eco-system-wallet (var-get ecoSystemWallet)))
     (ok true)
   )
 )
@@ -480,11 +483,12 @@
     (var-set activeCoreContract newContractAddress)
     (try! (contract-call? oldContract shutdown-contract block-height))
     (try! (contract-call? newContract set-non-profit-wallet (var-get nonProfitWallet)))
+    (try! (contract-call? newContract set-eco-system-wallet (var-get ecoSystemWallet)))
     (as-contract (mark-job-as-executed jobId))
   )
 )
 
-;; CITY WALLET MANAGEMENT
+;; NON PROFIT WALLET MANAGEMENT
 
 ;; initial value for city wallet
 (define-data-var nonProfitWallet principal 'STFCVYY1RJDNJHST7RRTPACYHVJQDJ7R1DWTQHQA)
@@ -501,7 +505,7 @@
       (coreContractAddress (contract-of targetContract))
       (coreContract (unwrap! (map-get? CoreContracts coreContractAddress) (err ERR_CORE_CONTRACT_NOT_FOUND)))
     )
-    (asserts! (is-authorized-city) (err ERR_UNAUTHORIZED))
+    (asserts! (is-authorized-non-profit) (err ERR_UNAUTHORIZED))
     (asserts! (is-eq coreContractAddress (var-get activeCoreContract)) (err ERR_UNAUTHORIZED))
     (var-set nonProfitWallet newNonProfitWallet)
     (try! (contract-call? targetContract set-non-profit-wallet newNonProfitWallet))
@@ -524,16 +528,62 @@
   )
 )
 
-;; check if contract caller is city wallet
-(define-private (is-authorized-city)
+;; check if contract caller is non profit wallet
+(define-private (is-authorized-non-profit)
   (is-eq contract-caller (var-get nonProfitWallet))
 )
 
-;; TOKEN MANAGEMENT
+;; ECO SYSTEM WALLET MANAGEMENT
 
+;; initial value for city wallet
+;; CPB TODO - use a different literal
+(define-data-var ecoSystemWallet principal 'STFCVYY1RJDNJHST7RRTPACYHVJQDJ7R1DWTQHQA)
+
+;; returns city wallet principal
+(define-read-only (get-eco-system-wallet)
+  (ok (var-get ecoSystemWallet))
+)
+ 
+;; protected function to update eco system wallet variable
+(define-public (set-eco-system-wallet (targetContract <coreTrait>) (newEcoSystemWallet principal))
+  (let
+    (
+      (coreContractAddress (contract-of targetContract))
+      (coreContract (unwrap! (map-get? CoreContracts coreContractAddress) (err ERR_CORE_CONTRACT_NOT_FOUND)))
+    )
+    (asserts! (is-authorized-eco-system) (err ERR_UNAUTHORIZED))
+    (asserts! (is-eq coreContractAddress (var-get activeCoreContract)) (err ERR_UNAUTHORIZED))
+    (var-set ecoSystemWallet newEcoSystemWallet)
+    (try! (contract-call? targetContract set-eco-system-wallet newEcoSystemWallet))
+    (ok true)
+  )
+)
+
+(define-public (execute-set-eco-system-wallet-job (jobId uint) (targetContract <coreTrait>))
+  (let
+    (
+      (coreContractAddress (contract-of targetContract))
+      (coreContract (unwrap! (map-get? CoreContracts coreContractAddress) (err ERR_CORE_CONTRACT_NOT_FOUND)))
+      (newEcoSystemWallet (unwrap! (get-principal-value-by-name jobId "newEcoSystemWallet") (err ERR_UNKNOWN_ARGUMENT)))
+    )
+    (asserts! (is-approver contract-caller) (err ERR_UNAUTHORIZED))
+    (asserts! (is-eq coreContractAddress (var-get activeCoreContract)) (err ERR_UNAUTHORIZED))
+    (var-set ecoSystemWallet newEcoSystemWallet)
+    (try! (contract-call? targetContract set-eco-system-wallet newEcoSystemWallet))
+    (as-contract (mark-job-as-executed jobId))
+  )
+)
+
+;; check if contract caller is city wallet
+(define-private (is-authorized-eco-system)
+  (is-eq contract-caller (var-get ecoSystemWallet))
+)
+
+;; TOKEN MANAGEMENT
+;; CPB TODO is authorized non profit really what this should be asserting on ?
 (define-public (set-token-uri (targetContract <tokenTrait>) (newUri (optional (string-utf8 256))))
   (begin
-    (asserts! (is-authorized-city) (err ERR_UNAUTHORIZED))
+    (asserts! (is-authorized-non-profit) (err ERR_UNAUTHORIZED))
     (as-contract (try! (contract-call? targetContract set-token-uri newUri)))
     (ok true)
   )

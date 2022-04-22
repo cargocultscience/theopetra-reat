@@ -1305,7 +1305,7 @@ describe("[CityCoin Auth]", () => {
   //////////////////////////////////////////////////
   // NON PROFIT WALLET MANAGEMENT
   //////////////////////////////////////////////////
-  describe("CITY WALLET MANAGEMENT", () => {
+  describe("NON PROFIT WALLET MANAGEMENT", () => {
     describe("get-non-profit-wallet()", () => {
       it("succeeds and returns non-profit wallet", () => {
         // arrange
@@ -1316,7 +1316,7 @@ describe("[CityCoin Auth]", () => {
         result.expectOk().expectPrincipal(nonProfitWallet.address);
       });
     });
-    describe("set-city-wallet()", () => {
+    describe("set-non-profit-wallet()", () => {
       it("throws ERR_CORE_CONTRACT_NOT_FOUND if principal not found in core contracts map", () => {
         // arrange
         const nonProfitWallet = accounts.get("non_profit_wallet")!;
@@ -1377,7 +1377,7 @@ describe("[CityCoin Auth]", () => {
           .expectUint(AuthModel.ErrCode.ERR_UNAUTHORIZED);
       });
 
-      it("successfully change city wallet when called by current non profit wallet", () => {
+      it("successfully change non profit wallet when called by current non profit wallet", () => {
         // arrange
         const nonProfitWallet = accounts.get("non_profit_wallet")!;
         const newNonProfitWallet = accounts.get("wallet_2")!;
@@ -1406,8 +1406,8 @@ describe("[CityCoin Auth]", () => {
           .expectPrincipal(newNonProfitWallet.address);
       });
     });
-    describe("execute-set-city-wallet-job()", () => {
-      it("successfully change city wallet when called by job approver", () => {
+    describe("execute-set-non-profit-wallet-job()", () => {
+      it("successfully change non profit wallet when called by job approver", () => {
         // arrange
         const jobId = 1;
         const sender = accounts.get("wallet_1")!;
@@ -1454,6 +1454,163 @@ describe("[CityCoin Auth]", () => {
         core
           .getNonProfitWallet()
           .result.expectPrincipal(newNonProfitWallet.address);
+      });
+    });
+  });
+
+  //////////////////////////////////////////////////
+  // ECO SYSTEM WALLET MANAGEMENT
+  //////////////////////////////////////////////////
+  describe("ECO SYSTEM WALLET MANAGEMENT", () => {
+    describe("get-eco-system-wallet()", () => {
+      it("succeeds and returns eco system wallet", () => {
+        // arrange
+        const ecoSystemWallet = accounts.get("eco_system_wallet")!;
+        // act
+        const result = auth.getEcoSystemWallet().result;
+        // assert
+        result.expectOk().expectPrincipal(ecoSystemWallet.address);
+      });
+    });
+    describe("set-eco-system-wallet()", () => {
+      it("throws ERR_CORE_CONTRACT_NOT_FOUND if principal not found in core contracts map", () => {
+        // arrange
+        const ecoSystemWallet = accounts.get("eco_system_wallet")!;
+        const newEcoSystemWallet = accounts.get("wallet_2")!;
+        // act
+        const receipt = chain.mineBlock([
+          auth.setEcoSystemWallet(
+            core.address,
+            newEcoSystemWallet,
+            ecoSystemWallet
+          ),
+        ]).receipts[0];
+        // assert
+        receipt.result
+          .expectErr()
+          .expectUint(AuthModel.ErrCode.ERR_CORE_CONTRACT_NOT_FOUND);
+      });
+
+      it("throws ERR_UNAUTHORIZED if not called by eco system wallet", () => {
+        // arrange
+        const sender = accounts.get("wallet_1")!;
+        const newEcoSystemWallet = accounts.get("wallet_2")!;
+        chain.mineBlock([
+          core.testInitializeCore(core.address),
+        ]);
+        // act
+        const receipt = chain.mineBlock([
+          auth.setEcoSystemWallet(
+            core.address,
+            newEcoSystemWallet,
+            sender
+          ),
+        ]).receipts[0];
+        // assert
+        receipt.result
+          .expectErr()
+          .expectUint(AuthModel.ErrCode.ERR_UNAUTHORIZED);
+      });
+
+      it("throws ERR_UNAUTHORIZED if not called by the active core contract", () => {
+        // arrange
+        const ecoSystemWallet = accounts.get("eco_system_wallet")!;
+        const newEcoSystemWallet = accounts.get("wallet_2")!;
+        chain.mineBlock([
+          core.testInitializeCore(core.address),
+        ]);
+        // act
+        const receipt = chain.mineBlock([
+          auth.setEcoSystemWallet(
+            core.address,
+            newEcoSystemWallet,
+            ecoSystemWallet
+          ),
+        ]).receipts[0];
+        // assert
+        receipt.result
+          .expectErr()
+          .expectUint(AuthModel.ErrCode.ERR_UNAUTHORIZED);
+      });
+
+      it("successfully change eco system wallet when called by current eco system wallet", () => {
+        // arrange
+        const ecoSystemWallet = accounts.get("eco_system_wallet")!;
+        const newEcoSystemWallet = accounts.get("wallet_2")!;
+        chain.mineBlock([
+          core.testInitializeCore(core.address),
+          auth.testSetActiveCoreContract(ecoSystemWallet),
+        ]);
+
+        // act
+        const receipt = chain.mineBlock([
+          auth.setEcoSystemWallet(
+            core.address,
+            newEcoSystemWallet,
+            ecoSystemWallet
+          ),
+        ]).receipts[0];
+
+        // assert
+        receipt.result.expectOk().expectBool(true);
+        core
+          .getEcoSystemWallet()
+          .result.expectPrincipal(newEcoSystemWallet.address);
+        auth
+          .getEcoSystemWallet()
+          .result.expectOk()
+          .expectPrincipal(newEcoSystemWallet.address);
+      });
+    });
+
+    describe("execute-set-eco-system-wallet-job()", () => {
+      it("successfully change eco system wallet when called by job approver", () => {
+        // arrange
+        const jobId = 1;
+        const sender = accounts.get("wallet_1")!;
+        const approver1 = accounts.get("wallet_2")!;
+        const approver2 = accounts.get("wallet_3")!;
+        const approver3 = accounts.get("wallet_4")!;
+        const ecoSystemWallet = accounts.get("eco_system_wallet")!;
+        const newEcoSystemWallet = accounts.get("wallet_2")!;
+        chain.mineBlock([
+          core.testInitializeCore(core.address),
+          auth.testSetActiveCoreContract(ecoSystemWallet),
+        ]);
+
+        chain.mineBlock([
+          auth.createJob(
+            "update eco system wallet wallet 1",
+            auth.address,
+            sender
+          ),
+          auth.addPrincipalArgument(
+            jobId,
+            "newEcoSystemWallet",
+            newEcoSystemWallet.address,
+            sender
+          ),
+          auth.activateJob(jobId, sender),
+          auth.approveJob(jobId, approver1),
+          auth.approveJob(jobId, approver2),
+          auth.approveJob(jobId, approver3),
+        ]);
+
+        // act
+        const receipt = chain.mineBlock([
+          auth.executeSetEcoSystemWalletJob(
+            jobId,
+            core.address,
+            approver1
+          ),
+        ]).receipts[0];
+
+        // asserts
+        receipt.result.expectOk().expectBool(true);
+
+        core
+          .getEcoSystemWallet()
+          .result.expectPrincipal(newEcoSystemWallet.address);
       });
     });
   });

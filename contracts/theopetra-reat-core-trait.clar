@@ -26,7 +26,11 @@
     (set-non-profit-wallet (principal)
       (response bool uint)
     )
-    
+
+    (set-eco-system-wallet (principal)
+      (response bool uint)
+    )
+
     (shutdown-contract (uint)
       (response bool uint)
     )

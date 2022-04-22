@@ -53,6 +53,22 @@ export class CoreModel extends Model {
   }
 
   //////////////////////////////////////////////////
+  // ECO SYSTEM WALLET MANAGEMENT
+  //////////////////////////////////////////////////
+
+  setEcoSystemWallet(newEcoSystemWallet: Account, sender: Account): Tx {
+    return this.callPublic(
+      "set-eco-system-wallet",
+      [types.principal(newEcoSystemWallet.address)],
+      sender.address
+    );
+  }
+
+  getEcoSystemWallet(): ReadOnlyFn {
+    return this.callReadOnly("get-eco-system-wallet");
+  }
+
+  //////////////////////////////////////////////////
   // REGISTRATION
   //////////////////////////////////////////////////
 

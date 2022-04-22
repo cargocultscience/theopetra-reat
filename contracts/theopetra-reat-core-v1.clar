@@ -29,21 +29,39 @@
 (define-constant ERR_UNABLE_TO_FIND_CITY_WALLET u1019)
 (define-constant ERR_CLAIM_IN_WRONG_CONTRACT u1020)
 
-;; CITY WALLET MANAGEMENT
+;; NON PROFIT WALLET MANAGEMENT
 
-;; initial value for city wallet, set to this contract until initialized
+;; initial value for non profit wallet, set to this contract until initialized
 (define-data-var nonProfitWallet principal .theopetra-reat-core-v1)
 
-;; returns set city wallet principal
+;; returns set non profit wallet principal
 (define-read-only (get-non-profit-wallet)
   (var-get nonProfitWallet)
 )
  
-;; protected function to update city wallet variable
+;; protected function to update non profit wallet variable
 (define-public (set-non-profit-wallet (newNonProfitWallet principal))
   (begin
     (asserts! (is-authorized-auth) (err ERR_UNAUTHORIZED))
     (ok (var-set nonProfitWallet newNonProfitWallet))
+  )
+)
+
+;; ECO SYSTEM WALLET MANAGEMENT
+
+;; initial value for eco system wallet, set to this contract until initialized
+(define-data-var ecoSystemWallet principal .theopetra-reat-core-v1)
+
+;; returns set eco system wallet principal
+(define-read-only (get-eco-system-wallet)
+  (var-get ecoSystemWallet)
+)
+ 
+;; protected function to update non profit wallet variable
+(define-public (set-eco-system-wallet (newEcoSystemWallet principal))
+  (begin
+    (asserts! (is-authorized-auth) (err ERR_UNAUTHORIZED))
+    (ok (var-set ecoSystemWallet newEcoSystemWallet))
   )
 )
 
@@ -893,9 +911,14 @@
   )
 )
 
-;; check if contract caller is city wallet
-(define-private (is-authorized-city)
+;; check if contract caller is non profit wallet
+(define-private (is-authorized-non-profit)
   (is-eq contract-caller (var-get nonProfitWallet))
+)
+
+;; check if contract caller is city wallet
+(define-private (is-authorized-eco-system)
+  (is-eq contract-caller (var-get ecoSystemWallet))
 )
 
 ;; check if contract caller is contract owner

@@ -3,6 +3,8 @@
 ;; FUNCTIONS ONLY USED DURING TESTS
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; CPB TODO add eco system wallet tests here
+
 ;; test to attempt changing city wallet from an unapproved address
 (define-public (test-wallet-attack)
   (contract-call? .theopetra-reat-core-v1 set-non-profit-wallet 'STFCVYY1RJDNJHST7RRTPACYHVJQDJ7R1DWTQHQA)

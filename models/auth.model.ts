@@ -208,6 +208,22 @@ export class AuthModel extends Model {
     );
   }
 
+  getEcoSystemWallet() {
+    return this.callReadOnly("get-eco-system-wallet");
+  }
+
+  setEcoSystemWallet(
+    requestor: string,
+    newEcoSystemWallet: Account,
+    sender: Account
+  ): Tx {
+    return this.callPublic(
+      "set-eco-system-wallet",
+      [types.principal(requestor), types.principal(newEcoSystemWallet.address)],
+      sender.address
+    );
+  }
+
   setTokenUri(
     sender: Account,
     target: string,
@@ -232,6 +248,18 @@ export class AuthModel extends Model {
   ): Tx {
     return this.callPublic(
       "execute-set-non-profit-wallet-job",
+      [types.uint(jobId), types.principal(targetContract)],
+      sender.address
+    );
+  }
+
+  executeSetEcoSystemWalletJob(
+    jobId: number,
+    targetContract: string,
+    sender: Account
+  ): Tx {
+    return this.callPublic(
+      "execute-set-eco-system-wallet-job",
       [types.uint(jobId), types.principal(targetContract)],
       sender.address
     );
