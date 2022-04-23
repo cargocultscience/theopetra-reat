@@ -188,6 +188,9 @@
 ;; define split to custodied wallet address for the non profit
 (define-constant SPLIT_NON_PROFIT_PCT u15)
 
+;; define split to custodied wallet address for the non profit
+(define-constant SPLIT_ECO_SYSTEM_PCT u5)
+
 ;; how long a miner must wait before block winner can claim their minted tokens
 (define-data-var tokenRewardMaturity uint u100)
 
@@ -203,6 +206,7 @@
     minersCount: uint,
     amount: uint,
     amountToNonProfit: uint,
+    amountToEcoSystem: uint,
     amountToStackers: uint,
     rewardClaimed: bool
   }
@@ -220,6 +224,7 @@
       minersCount: u0,
       amount: u0,
       amountToNonProfit: u0,
+      amountToEcoSystem: u0,
       amountToStackers: u0,
       rewardClaimed: false
     }
@@ -307,15 +312,16 @@
   (begin
     (asserts! (get-activation-status) (err ERR_CONTRACT_NOT_ACTIVATED))
     (asserts! (> (len amounts) u0) (err ERR_INSUFFICIENT_COMMITMENT))
-    (match (fold mine-single amounts (ok { userId: (get-or-create-user-id tx-sender), toStackers: u0, toNonProfit: u0, stacksHeight: block-height }))
+    (match (fold mine-single amounts (ok { userId: (get-or-create-user-id tx-sender), toStackers: u0, toNonProfit: u0, toEcoSystem: u0, stacksHeight: block-height }))
       okReturn 
       (begin
-        (asserts! (>= (stx-get-balance tx-sender) (+ (get toStackers okReturn) (get toNonProfit okReturn))) (err ERR_INSUFFICIENT_BALANCE))
+        (asserts! (>= (stx-get-balance tx-sender) (+ (get toStackers okReturn) (get toNonProfit okReturn) (get toEcoSystem okReturn))) (err ERR_INSUFFICIENT_BALANCE))
         (if (> (get toStackers okReturn ) u0)
           (try! (stx-transfer? (get toStackers okReturn ) tx-sender (as-contract tx-sender)))
           false
         )
         (try! (stx-transfer? (get toNonProfit okReturn) tx-sender (var-get nonProfitWallet)))
+        ;;(try! (stx-transfer? (get toEocSystem okReturn) tx-sender (var-get ecoSystemWallet)))
         (print { 
           firstBlock: block-height, 
           lastBlock: (- (+ block-height (len amounts)) u1) 
@@ -334,6 +340,7 @@
       userId: uint,
       toStackers: uint,
       toNonProfit: uint,
+      toEcoSystem: uint,
       stacksHeight: uint
     }
     uint
@@ -351,15 +358,22 @@
             amountUstx
           )
         )
-        (toStackers (- amountUstx toNonProfit))
+        (toEcoSystem
+          (if stackingActive
+            (/ (* SPLIT_ECO_SYSTEM_PCT amountUstx) u100)
+            u0
+          )
+        )
+        (toStackers (- amountUstx (+ toNonProfit toEcoSystem)))
       )
       (asserts! (not (has-mined-at-block stacksHeight (get userId okReturn))) (err ERR_USER_ALREADY_MINED))
       (asserts! (> amountUstx u0) (err ERR_INSUFFICIENT_COMMITMENT))
-      (try! (set-tokens-mined (get userId okReturn) stacksHeight amountUstx toStackers toNonProfit))
+      (try! (set-tokens-mined (get userId okReturn) stacksHeight amountUstx toStackers toNonProfit toEcoSystem))
       (ok (merge okReturn 
         {
           toStackers: (+ (get toStackers okReturn) toStackers),
           toNonProfit: (+ (get toNonProfit okReturn) toNonProfit),
+          toEcoSystem: (+ (get toEcoSystem okReturn) toEcoSystem),
           stacksHeight: (+ stacksHeight u1)
         }
       ))
@@ -379,13 +393,19 @@
           amountUstx
         )
       )
-      (toStackers (- amountUstx toNonProfit))
+      (toEcoSystem
+        (if stackingActive
+          (/ (* SPLIT_ECO_SYSTEM_PCT amountUstx) u100)
+          u0
+        )
+      )
+      (toStackers (- amountUstx (+ toNonProfit toEcoSystem)))
     )
     (asserts! (get-activation-status) (err ERR_CONTRACT_NOT_ACTIVATED))
     (asserts! (not (has-mined-at-block stacksHeight userId)) (err ERR_USER_ALREADY_MINED))
     (asserts! (> amountUstx u0) (err ERR_INSUFFICIENT_COMMITMENT))
     (asserts! (>= (stx-get-balance tx-sender) amountUstx) (err ERR_INSUFFICIENT_BALANCE))
-    (try! (set-tokens-mined userId stacksHeight amountUstx toStackers toNonProfit))
+    (try! (set-tokens-mined userId stacksHeight amountUstx toStackers toNonProfit toEcoSystem))
     (if (is-some memo)
       (print memo)
       none
@@ -395,11 +415,12 @@
       false
     )
     (try! (stx-transfer? toNonProfit tx-sender (var-get nonProfitWallet)))
+    ;;(try! (stx-transfer? toEcoSystem tx-sender (var-get ecoSystemWallet)))
     (ok true)
   )
 )
 
-(define-private (set-tokens-mined (userId uint) (stacksHeight uint) (amountUstx uint) (toStackers uint) (toNonProfit uint))
+(define-private (set-tokens-mined (userId uint) (stacksHeight uint) (amountUstx uint) (toStackers uint) (toNonProfit uint) (toEcoSystem uint))
   (let
     (
       (blockStats (get-mining-stats-at-block-or-default stacksHeight))
@@ -415,6 +436,7 @@
         minersCount: newMinersCount,
         amount: (+ (get amount blockStats) amountUstx),
         amountToNonProfit: (+ (get amountToNonProfit blockStats) toNonProfit),
+        amountToEcoSystem: (+ (get amountToEcoSystem blockStats) toEcoSystem),
         amountToStackers: (+ (get amountToStackers blockStats) toStackers),
         rewardClaimed: false
       }
@@ -495,6 +517,7 @@
         minersCount: (get minersCount blockStats),
         amount: (get amount blockStats),
         amountToNonProfit: (get amountToNonProfit blockStats),
+        amountToEcoSystem: (get amountToEcoSystem blockStats),
         amountToStackers: (get amountToStackers blockStats),
         rewardClaimed: true
       }

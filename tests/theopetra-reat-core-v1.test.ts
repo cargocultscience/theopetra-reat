@@ -493,7 +493,7 @@ describe("[TheopetraREAT Core]", () => {
         );
 
         receipt.events.expectSTXTransferEvent(
-          amountUstx * (1 - CoreModel.SPLIT_NON_PROFIT_PCT),
+          amountUstx * (1 - (CoreModel.SPLIT_NON_PROFIT_PCT + CoreModel.SPLIT_ECO_SYSTEM_PCT)),
           miner.address,
           core.address
         );
@@ -817,7 +817,7 @@ describe("[TheopetraREAT Core]", () => {
         );
 
         receipt.events.expectSTXTransferEvent(
-          totalAmount * (1 - CoreModel.SPLIT_NON_PROFIT_PCT),
+          totalAmount * (1 - (CoreModel.SPLIT_NON_PROFIT_PCT + CoreModel.SPLIT_ECO_SYSTEM_PCT)),
           miner.address,
           core.address
         );
@@ -864,7 +864,7 @@ describe("[TheopetraREAT Core]", () => {
         );
 
         receipt.events.expectSTXTransferEvent(
-          totalAmount * (1 - CoreModel.SPLIT_NON_PROFIT_PCT),
+          totalAmount * (1 - (CoreModel.SPLIT_NON_PROFIT_PCT + CoreModel.SPLIT_ECO_SYSTEM_PCT)),
           miner.address,
           core.address
         );
@@ -2337,7 +2337,7 @@ describe("[TheopetraREAT Core]", () => {
         );
 
         receipt.events.expectSTXTransferEvent(
-          amountUstx * 0.85,
+          amountUstx * (1 - (CoreModel.SPLIT_NON_PROFIT_PCT + CoreModel.SPLIT_ECO_SYSTEM_PCT)),
           core.address,
           stacker.address
         );
