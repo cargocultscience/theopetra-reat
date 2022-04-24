@@ -240,6 +240,14 @@ export class CoreModel extends Model {
     );
   }
 
+  unsafeSetEcoSystemWallet(newEcoSystemWallet: Account): Tx {
+    return this.callPublic(
+      "test-unsafe-set-eco-system-wallet",
+      [types.principal(newEcoSystemWallet.address)],
+      this.deployer.address
+    );
+  }
+
   unsafeSetActivationThreshold(newThreshold: number): Tx {
     return this.callPublic(
       "test-set-activation-threshold",

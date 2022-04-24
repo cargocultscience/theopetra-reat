@@ -321,7 +321,10 @@
           false
         )
         (try! (stx-transfer? (get toNonProfit okReturn) tx-sender (var-get nonProfitWallet)))
-        ;;(try! (stx-transfer? (get toEocSystem okReturn) tx-sender (var-get ecoSystemWallet)))
+        (if (> (get toEcoSystem okReturn) u0)
+          (try! (stx-transfer? (get toEcoSystem okReturn) tx-sender (var-get ecoSystemWallet)))
+          false
+        )
         (print { 
           firstBlock: block-height, 
           lastBlock: (- (+ block-height (len amounts)) u1) 
@@ -415,7 +418,10 @@
       false
     )
     (try! (stx-transfer? toNonProfit tx-sender (var-get nonProfitWallet)))
-    ;;(try! (stx-transfer? toEcoSystem tx-sender (var-get ecoSystemWallet)))
+    (if (> toEcoSystem u0)
+      (try! (stx-transfer? toEcoSystem tx-sender (var-get ecoSystemWallet))) 
+      false
+    )
     (ok true)
   )
 )

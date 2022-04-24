@@ -427,11 +427,13 @@ describe("[TheopetraREAT Core]", () => {
       it("succeeds and cause one stx_transfer_event to non profit wallet during first cycle", () => {
         // arrange
         const nonProfitWallet = accounts.get("non_profit_wallet")!;
+        const ecoSystemWallet = accounts.get("eco_system_wallet")!;
         const miner = accounts.get("wallet_2")!;
         const amountUstx = 200;
         const block = chain.mineBlock([
           core.testInitializeCore(core.address),
           core.unsafeSetNonProfitWallet(nonProfitWallet),
+          core.unsafeSetEcoSystemWallet(ecoSystemWallet),
           core.unsafeSetActivationThreshold(1),
           core.registerUser(miner),
         ]);
@@ -457,12 +459,14 @@ describe("[TheopetraREAT Core]", () => {
       it("succeeds and cause one stx_transfer event to non profit wallet and one to stacker while mining in cycle with stackers", () => {
         // arrange
         const nonProfitWallet = accounts.get("non_profit_wallet")!;
+        const ecoSystemWallet = accounts.get("eco_system_wallet")!;
         const miner = accounts.get("wallet_2")!;
         const amountUstx = 200;
         const amountTokens = 500;
         const block = chain.mineBlock([
           core.testInitializeCore(core.address),
           core.unsafeSetNonProfitWallet(nonProfitWallet),
+          core.unsafeSetEcoSystemWallet(ecoSystemWallet),
           token.ftMint(amountTokens, miner),
           core.unsafeSetActivationThreshold(1),
           core.registerUser(miner),
@@ -484,12 +488,18 @@ describe("[TheopetraREAT Core]", () => {
 
         //assert
         receipt.result.expectOk().expectBool(true);
-        assertEquals(receipt.events.length, 2);
+        assertEquals(receipt.events.length, 3);
 
         receipt.events.expectSTXTransferEvent(
           amountUstx * CoreModel.SPLIT_NON_PROFIT_PCT,
           miner.address,
           nonProfitWallet.address
+        );
+
+        receipt.events.expectSTXTransferEvent(
+          amountUstx * CoreModel.SPLIT_ECO_SYSTEM_PCT,
+          miner.address,
+          ecoSystemWallet.address
         );
 
         receipt.events.expectSTXTransferEvent(
@@ -781,10 +791,12 @@ describe("[TheopetraREAT Core]", () => {
         const miner = accounts.get("wallet_1")!;
         const amounts = [10000];
         const nonProfitWallet = accounts.get("non_profit_wallet")!;
+        const ecoSystemWallet = accounts.get("eco_system_wallet")!;
         const amountTokens = 500;
         const block = chain.mineBlock([
           core.testInitializeCore(core.address),
           core.unsafeSetNonProfitWallet(nonProfitWallet),
+          core.unsafeSetEcoSystemWallet(ecoSystemWallet),
           token.ftMint(amountTokens, miner),
           core.unsafeSetActivationThreshold(1),
           core.registerUser(miner),
@@ -806,7 +818,7 @@ describe("[TheopetraREAT Core]", () => {
         // assert
         receipt.result.expectOk().expectBool(true);
 
-        assertEquals(receipt.events.length, 3);
+        assertEquals(receipt.events.length, 4);
 
         const totalAmount = amounts.reduce((sum, amount) => sum + amount, 0);
 
@@ -814,6 +826,12 @@ describe("[TheopetraREAT Core]", () => {
           totalAmount * CoreModel.SPLIT_NON_PROFIT_PCT,
           miner.address,
           nonProfitWallet.address
+        );
+
+        receipt.events.expectSTXTransferEvent(
+          totalAmount * CoreModel.SPLIT_ECO_SYSTEM_PCT,
+          miner.address,
+          ecoSystemWallet.address
         );
 
         receipt.events.expectSTXTransferEvent(
@@ -828,10 +846,12 @@ describe("[TheopetraREAT Core]", () => {
         const miner = accounts.get("wallet_1")!;
         const amounts = [100, 200, 300];
         const nonProfitWallet = accounts.get("non_profit_wallet")!;
+        const ecoSystemWallet = accounts.get("eco_system_wallet")!;
         const amountTokens = 500;
         const block = chain.mineBlock([
           core.testInitializeCore(core.address),
           core.unsafeSetNonProfitWallet(nonProfitWallet),
+          core.unsafeSetEcoSystemWallet(ecoSystemWallet),
           token.ftMint(amountTokens, miner),
           core.unsafeSetActivationThreshold(1),
           core.registerUser(miner),
@@ -853,7 +873,7 @@ describe("[TheopetraREAT Core]", () => {
         // assert
         receipt.result.expectOk().expectBool(true);
 
-        assertEquals(receipt.events.length, 3);
+        assertEquals(receipt.events.length, 4);
 
         const totalAmount = amounts.reduce((sum, amount) => sum + amount, 0);
 
@@ -861,6 +881,12 @@ describe("[TheopetraREAT Core]", () => {
           totalAmount * CoreModel.SPLIT_NON_PROFIT_PCT,
           miner.address,
           nonProfitWallet.address
+        );
+
+        receipt.events.expectSTXTransferEvent(
+          totalAmount * CoreModel.SPLIT_ECO_SYSTEM_PCT,
+          miner.address,
+          ecoSystemWallet.address
         );
 
         receipt.events.expectSTXTransferEvent(
