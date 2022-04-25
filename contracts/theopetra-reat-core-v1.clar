@@ -896,21 +896,13 @@
     ;; if contract is active, return based on issuance schedule
     ;; halvings occur every 210,000 blocks for 1,050,000 Stacks blocks
     ;; then mining continues indefinitely with 3,125 tokens as the reward
-    (asserts! (> minerBlockHeight (var-get coinbaseThreshold1))
-      (if (<= (- minerBlockHeight (var-get activationBlock)) u10000)
-        ;; bonus reward first 10,000 blocks
-        u250000
-        ;; standard reward remaining 200,000 blocks until 1st halving
-        u100000
-      )
-    )
-    ;; computations based on each halving threshold
-    (asserts! (> minerBlockHeight (var-get coinbaseThreshold2)) u50000)
-    (asserts! (> minerBlockHeight (var-get coinbaseThreshold3)) u25000)
-    (asserts! (> minerBlockHeight (var-get coinbaseThreshold4)) u12500)
-    (asserts! (> minerBlockHeight (var-get coinbaseThreshold5)) u6250)
+    (asserts! (> minerBlockHeight (var-get coinbaseThreshold1)) u7230)
+    (asserts! (> minerBlockHeight (var-get coinbaseThreshold2)) u1356)
+    (asserts! (> minerBlockHeight (var-get coinbaseThreshold3)) u677)
+    (asserts! (> minerBlockHeight (var-get coinbaseThreshold4)) u339)
+    (asserts! (> minerBlockHeight (var-get coinbaseThreshold5)) u90)
     ;; default value after 5th halving
-    u3125
+    u0
   )
 )
 

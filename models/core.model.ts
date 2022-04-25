@@ -30,7 +30,8 @@ export class CoreModel extends Model {
   static readonly ErrCode = ErrCode;
   static readonly ACTIVATION_DELAY = 150;
   static readonly ACTIVATION_THRESHOLD = 20;
-  static readonly TOKEN_HALVING_BLOCKS = 210000;
+  static readonly TOKEN_HALVING_BLOCKS_FIRST_PERIOD = 78840;
+  static readonly TOKEN_HALVING_BLOCKS = 210240;
   static readonly REWARD_CYCLE_LENGTH = 2100;
   static readonly SPLIT_NON_PROFIT_PCT = 0.15;
   static readonly SPLIT_ECO_SYSTEM_PCT = 0.05;

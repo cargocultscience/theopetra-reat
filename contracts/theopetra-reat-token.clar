@@ -62,7 +62,8 @@
 ;; TOKEN CONFIGURATION
 
 ;; how many blocks until the next halving occurs
-(define-constant TOKEN_HALVING_BLOCKS u210000)
+(define-constant TOKEN_HALVING_BLOCKS_FIRST_PERIOD u78840)
+(define-constant TOKEN_HALVING_BLOCKS u210240)
 
 ;; store block height at each halving, set by register-user in core contract 
 (define-data-var coinbaseThreshold1 uint u0)
@@ -84,15 +85,16 @@
   (let
     (
       (coreContractMap (try! (contract-call? .theopetra-reat-auth get-core-contract-info coreContract)))
+      (firstHalvingBlockHeight (+ stacksHeight TOKEN_HALVING_BLOCKS_FIRST_PERIOD))
     )
     (asserts! (is-eq (get state coreContractMap) STATE_ACTIVE) (err ERR_UNAUTHORIZED))
     (asserts! (not (var-get tokenActivated)) (err ERR_TOKEN_ALREADY_ACTIVATED))
     (var-set tokenActivated true)
-    (var-set coinbaseThreshold1 (+ stacksHeight TOKEN_HALVING_BLOCKS))
-    (var-set coinbaseThreshold2 (+ stacksHeight (* u2 TOKEN_HALVING_BLOCKS)))
-    (var-set coinbaseThreshold3 (+ stacksHeight (* u3 TOKEN_HALVING_BLOCKS)))
-    (var-set coinbaseThreshold4 (+ stacksHeight (* u4 TOKEN_HALVING_BLOCKS)))
-    (var-set coinbaseThreshold5 (+ stacksHeight (* u5 TOKEN_HALVING_BLOCKS)))
+    (var-set coinbaseThreshold1 firstHalvingBlockHeight)
+    (var-set coinbaseThreshold2 (+ firstHalvingBlockHeight (* u1 TOKEN_HALVING_BLOCKS)))
+    (var-set coinbaseThreshold3 (+ firstHalvingBlockHeight (* u2 TOKEN_HALVING_BLOCKS)))
+    (var-set coinbaseThreshold4 (+ firstHalvingBlockHeight (* u3 TOKEN_HALVING_BLOCKS)))
+    (var-set coinbaseThreshold5 (+ firstHalvingBlockHeight (* u4 TOKEN_HALVING_BLOCKS)))
     (ok true)
   )
 )

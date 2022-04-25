@@ -1125,7 +1125,7 @@ describe("[TheopetraREAT Core]", () => {
           .expectUint(CoreModel.ErrCode.ERR_MINER_DID_NOT_WIN);
       });
 
-      it("succeeds and mints 250000 tokens in 1st issuance cycle, during bonus period", () => {
+      it("succeeds and mints 7230 tokens in 1st issuance cycle, no bonus period", () => {
         // arrange
         const miner = accounts.get("wallet_2")!;
         const amount = 2;
@@ -1153,13 +1153,13 @@ describe("[TheopetraREAT Core]", () => {
         assertEquals(receipt.events.length, 1);
 
         receipt.events.expectFungibleTokenMintEvent(
-          250000,
+          7230,
           miner.address,
           "theopetra-reat"
         );
       });
 
-      it("succeeds and mints 100000 tokens in 1st issuance cycle, after bonus period", () => {
+      it("succeeds and mints 7230 tokens in 1st issuance cycle, after bonus period", () => {
         // arrange
         const miner = accounts.get("wallet_2")!;
         const amount = 2;
@@ -1189,13 +1189,13 @@ describe("[TheopetraREAT Core]", () => {
         assertEquals(receipt.events.length, 1);
 
         receipt.events.expectFungibleTokenMintEvent(
-          100000,
+          7230,
           miner.address,
           "theopetra-reat"
         );
       });
 
-      it("succeeds and mints 50000 tokens in 2nd issuance cycle", () => {
+      it("succeeds and mints 1356 tokens in 2nd issuance cycle", () => {
         // arrange
         const miner = accounts.get("wallet_2")!;
         const amount = 2;
@@ -1208,7 +1208,7 @@ describe("[TheopetraREAT Core]", () => {
           setupBlock.height + CoreModel.ACTIVATION_DELAY - 1;
 
         chain.mineEmptyBlockUntil(
-          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS + 1
+          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS_FIRST_PERIOD + 1
         );
 
         const block = chain.mineBlock([core.mineTokens(amount, miner)]);
@@ -1225,13 +1225,13 @@ describe("[TheopetraREAT Core]", () => {
         assertEquals(receipt.events.length, 1);
 
         receipt.events.expectFungibleTokenMintEvent(
-          50000,
+          1356,
           miner.address,
           "theopetra-reat"
         );
       });
 
-      it("succeeds and mints 25000 tokens in 3rd issuance cycle", () => {
+      it("succeeds and mints 677 tokens in 3rd issuance cycle", () => {
         // arrange
         const miner = accounts.get("wallet_2")!;
         const amount = 2;
@@ -1244,7 +1244,7 @@ describe("[TheopetraREAT Core]", () => {
           setupBlock.height + CoreModel.ACTIVATION_DELAY - 1;
 
         chain.mineEmptyBlockUntil(
-          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS * 2 + 1
+          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS_FIRST_PERIOD + CoreModel.TOKEN_HALVING_BLOCKS * 1 + 1
         );
 
         const block = chain.mineBlock([core.mineTokens(amount, miner)]);
@@ -1261,13 +1261,13 @@ describe("[TheopetraREAT Core]", () => {
         assertEquals(receipt.events.length, 1);
 
         receipt.events.expectFungibleTokenMintEvent(
-          25000,
+          677,
           miner.address,
           "theopetra-reat"
         );
       });
 
-      it("succeeds and mints 12500 tokens in 4th issuance cycle", () => {
+      it("succeeds and mints 339 tokens in 4th issuance cycle", () => {
         // arrange
         const miner = accounts.get("wallet_2")!;
         const amount = 2;
@@ -1280,7 +1280,7 @@ describe("[TheopetraREAT Core]", () => {
           setupBlock.height + CoreModel.ACTIVATION_DELAY - 1;
 
         chain.mineEmptyBlockUntil(
-          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS * 3 + 1
+          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS_FIRST_PERIOD + CoreModel.TOKEN_HALVING_BLOCKS * 2 + 1
         );
 
         const block = chain.mineBlock([core.mineTokens(amount, miner)]);
@@ -1297,13 +1297,13 @@ describe("[TheopetraREAT Core]", () => {
         assertEquals(receipt.events.length, 1);
 
         receipt.events.expectFungibleTokenMintEvent(
-          12500,
+          339,
           miner.address,
           "theopetra-reat"
         );
       });
 
-      it("succeeds and mints 6250 tokens in 5th issuance cycle", () => {
+      it("succeeds and mints 90 tokens in 5th issuance cycle", () => {
         // arrange
         const miner = accounts.get("wallet_2")!;
         const amount = 2;
@@ -1316,7 +1316,7 @@ describe("[TheopetraREAT Core]", () => {
           setupBlock.height + CoreModel.ACTIVATION_DELAY - 1;
 
         chain.mineEmptyBlockUntil(
-          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS * 4 + 1
+          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS_FIRST_PERIOD + CoreModel.TOKEN_HALVING_BLOCKS * 3 + 1
         );
 
         const block = chain.mineBlock([core.mineTokens(amount, miner)]);
@@ -1333,47 +1333,47 @@ describe("[TheopetraREAT Core]", () => {
         assertEquals(receipt.events.length, 1);
 
         receipt.events.expectFungibleTokenMintEvent(
-          6250,
+          90,
           miner.address,
           "theopetra-reat"
         );
       });
 
-      it("succeeds and mints 3125 tokens in final issuance cycle", () => {
-        // arrange
-        const miner = accounts.get("wallet_2")!;
-        const amount = 2;
-        const setupBlock = chain.mineBlock([
-          core.testInitializeCore(core.address),
-          core.unsafeSetActivationThreshold(1),
-          core.registerUser(miner),
-        ]);
-        const activationBlockHeight =
-          setupBlock.height + CoreModel.ACTIVATION_DELAY - 1;
+      // it("succeeds and mints 3125 tokens in final issuance cycle", () => {
+      //   // arrange
+      //   const miner = accounts.get("wallet_2")!;
+      //   const amount = 2;
+      //   const setupBlock = chain.mineBlock([
+      //     core.testInitializeCore(core.address),
+      //     core.unsafeSetActivationThreshold(1),
+      //     core.registerUser(miner),
+      //   ]);
+      //   const activationBlockHeight =
+      //     setupBlock.height + CoreModel.ACTIVATION_DELAY - 1;
 
-        chain.mineEmptyBlockUntil(
-          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS * 5 + 1
-        );
+      //   chain.mineEmptyBlockUntil(
+      //     activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS * 5 + 1
+      //   );
 
-        const block = chain.mineBlock([core.mineTokens(amount, miner)]);
-        chain.mineEmptyBlock(CoreModel.TOKEN_REWARD_MATURITY);
+      //   const block = chain.mineBlock([core.mineTokens(amount, miner)]);
+      //   chain.mineEmptyBlock(CoreModel.TOKEN_REWARD_MATURITY);
 
-        // act
-        const receipt = chain.mineBlock([
-          core.claimMiningReward(block.height - 1, miner),
-        ]).receipts[0];
+      //   // act
+      //   const receipt = chain.mineBlock([
+      //     core.claimMiningReward(block.height - 1, miner),
+      //   ]).receipts[0];
 
-        // assert
-        receipt.result.expectOk().expectBool(true);
+      //   // assert
+      //   receipt.result.expectOk().expectBool(true);
 
-        assertEquals(receipt.events.length, 1);
+      //   assertEquals(receipt.events.length, 1);
 
-        receipt.events.expectFungibleTokenMintEvent(
-          3125,
-          miner.address,
-          "theopetra-reat"
-        );
-      });
+      //   receipt.events.expectFungibleTokenMintEvent(
+      //     3125,
+      //     miner.address,
+      //     "theopetra-reat"
+      //   );
+      // });
     });
 
     describe("is-block-winner()", () => {
