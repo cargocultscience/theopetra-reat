@@ -26,7 +26,9 @@
 (define-constant ERR_CANNOT_STACK u1016)
 (define-constant ERR_REWARD_CYCLE_NOT_COMPLETED u1017)
 (define-constant ERR_NOTHING_TO_REDEEM u1018)
+(define-constant ERR_UNABLE_TO_FIND_CITY_WALLET u1019)
 (define-constant ERR_CLAIM_IN_WRONG_CONTRACT u1020)
+(define-constant ERR_PAST_TOKEN_EMISSIONS u1021)
 
 ;; NON PROFIT WALLET MANAGEMENT
 
@@ -405,6 +407,7 @@
       (toStackers (- amountUstx (+ toNonProfit toEcoSystem)))
     )
     (asserts! (get-activation-status) (err ERR_CONTRACT_NOT_ACTIVATED))
+    (asserts! (<= stacksHeight (var-get coinbaseEndOfIssuance)) (err ERR_PAST_TOKEN_EMISSIONS))
     (asserts! (not (has-mined-at-block stacksHeight userId)) (err ERR_USER_ALREADY_MINED))
     (asserts! (> amountUstx u0) (err ERR_INSUFFICIENT_COMMITMENT))
     (asserts! (>= (stx-get-balance tx-sender) amountUstx) (err ERR_INSUFFICIENT_BALANCE))
@@ -708,6 +711,8 @@
     (
       (currentCycle (unwrap! (get-reward-cycle startHeight) (err ERR_STACKING_NOT_AVAILABLE)))
       (targetCycle (+ u1 currentCycle))
+      (lastCycle (- (+ targetCycle lockPeriod) u1))
+      (lastPossibleCycle (unwrap! (get-reward-cycle (var-get coinbaseEndOfIssuance)) (err ERR_STACKING_NOT_AVAILABLE)))
       (commitment {
         stackerId: userId,
         amount: amountTokens,
@@ -722,8 +727,9 @@
     (try! (contract-call? .theopetra-reat-token transfer amountTokens tx-sender (as-contract tx-sender) none))
     (print {
       firstCycle: targetCycle, 
-      lastCycle: (- (+ targetCycle lockPeriod) u1)
+      lastCycle: lastCycle
     })
+    (asserts! (<= lastCycle lastPossibleCycle) (err ERR_PAST_TOKEN_EMISSIONS))
     (match (fold stack-tokens-closure REWARD_CYCLE_INDEXES (ok commitment))
       okValue (ok true)
       errValue (err errValue)
@@ -856,6 +862,7 @@
 (define-data-var coinbaseThreshold3 uint u0)
 (define-data-var coinbaseThreshold4 uint u0)
 (define-data-var coinbaseThreshold5 uint u0)
+(define-data-var coinbaseEndOfIssuance uint u0)
 
 (define-private (set-coinbase-thresholds)
   (let
@@ -867,6 +874,7 @@
     (var-set coinbaseThreshold3 (get coinbaseThreshold3 coinbaseAmounts))
     (var-set coinbaseThreshold4 (get coinbaseThreshold4 coinbaseAmounts))
     (var-set coinbaseThreshold5 (get coinbaseThreshold5 coinbaseAmounts))
+    (var-set coinbaseEndOfIssuance (get coinbaseEndOfIssuance coinbaseAmounts))
     (ok true)
   )
 )
@@ -883,7 +891,8 @@
       coinbaseThreshold2: (var-get coinbaseThreshold2),
       coinbaseThreshold3: (var-get coinbaseThreshold3),
       coinbaseThreshold4: (var-get coinbaseThreshold4),
-      coinbaseThreshold5: (var-get coinbaseThreshold5)
+      coinbaseThreshold5: (var-get coinbaseThreshold5),
+      coinbaseEndOfIssuance: (var-get coinbaseEndOfIssuance)
     })
   )
 )
@@ -893,6 +902,8 @@
   (begin
     ;; if contract is not active, return 0
     (asserts! (>= minerBlockHeight (var-get activationBlock)) u0)
+    (asserts! (<= minerBlockHeight (var-get coinbaseEndOfIssuance)) u0)
+
     ;; if contract is active, return based on issuance schedule
     ;; halvings occur every 210,000 blocks for 1,050,000 Stacks blocks
     ;; then mining continues indefinitely with 3,125 tokens as the reward
@@ -900,9 +911,9 @@
     (asserts! (> minerBlockHeight (var-get coinbaseThreshold2)) u1356)
     (asserts! (> minerBlockHeight (var-get coinbaseThreshold3)) u677)
     (asserts! (> minerBlockHeight (var-get coinbaseThreshold4)) u339)
-    (asserts! (> minerBlockHeight (var-get coinbaseThreshold5)) u90)
+    (asserts! (> minerBlockHeight (var-get coinbaseThreshold5)) u169)
     ;; default value after 5th halving
-    u0
+    u90
   )
 )
 

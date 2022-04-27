@@ -71,6 +71,7 @@
 (define-data-var coinbaseThreshold3 uint u0)
 (define-data-var coinbaseThreshold4 uint u0)
 (define-data-var coinbaseThreshold5 uint u0)
+(define-data-var coinbaseEndOfIssuance uint u0)
 
 ;; once activated, thresholds cannot be updated again
 (define-data-var tokenActivated bool false)
@@ -95,6 +96,7 @@
     (var-set coinbaseThreshold3 (+ firstHalvingBlockHeight (* u2 TOKEN_HALVING_BLOCKS)))
     (var-set coinbaseThreshold4 (+ firstHalvingBlockHeight (* u3 TOKEN_HALVING_BLOCKS)))
     (var-set coinbaseThreshold5 (+ firstHalvingBlockHeight (* u4 TOKEN_HALVING_BLOCKS)))
+    (var-set coinbaseEndOfIssuance (+ firstHalvingBlockHeight (* u46 TOKEN_HALVING_BLOCKS)))
     (ok true)
   )
 )
@@ -111,7 +113,8 @@
       coinbaseThreshold2: (var-get coinbaseThreshold2),
       coinbaseThreshold3: (var-get coinbaseThreshold3),
       coinbaseThreshold4: (var-get coinbaseThreshold4),
-      coinbaseThreshold5: (var-get coinbaseThreshold5)
+      coinbaseThreshold5: (var-get coinbaseThreshold5),
+      coinbaseEndOfIssuance: (var-get coinbaseEndOfIssuance)
     })
   )
 )

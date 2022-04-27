@@ -424,6 +424,34 @@ describe("[TheopetraREAT Core]", () => {
           .expectUint(CoreModel.ErrCode.ERR_STACKING_NOT_AVAILABLE);
       });
 
+      it("throws ERR_PAST_TOKEN_EMISSIONS while trying to mine after emission period end", () => {
+        // arrange
+        const miner = accounts.get("wallet_2")!;
+        const amountUstx = 200;
+        const setupBlock = chain.mineBlock([
+          core.testInitializeCore(core.address),
+          core.unsafeSetActivationThreshold(1),
+          core.registerUser(miner),
+        ]);
+
+        const activationBlockHeight =
+          setupBlock.height + CoreModel.ACTIVATION_DELAY - 1;
+
+        chain.mineEmptyBlockUntil(
+          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS_FIRST_PERIOD + CoreModel.TOKEN_HALVING_BLOCKS * 46 + 1
+        );
+
+        // act
+        const receipt = chain.mineBlock([
+          core.mineTokens(amountUstx, miner),
+        ]).receipts[0];
+
+        //assert
+        receipt.result
+          .expectErr()
+          .expectUint(CoreModel.ErrCode.ERR_PAST_TOKEN_EMISSIONS);
+      });
+
       it("succeeds and cause one stx_transfer_event to non profit wallet during first cycle", () => {
         // arrange
         const nonProfitWallet = accounts.get("non_profit_wallet")!;
@@ -1333,47 +1361,83 @@ describe("[TheopetraREAT Core]", () => {
         assertEquals(receipt.events.length, 1);
 
         receipt.events.expectFungibleTokenMintEvent(
+          169,
+          miner.address,
+          "theopetra-reat"
+        );
+      });
+
+      it("succeeds succeeds and mints 90 tokens in 6th issuance cycle", () => {
+        // arrange
+        const miner = accounts.get("wallet_2")!;
+        const amount = 2;
+        const setupBlock = chain.mineBlock([
+          core.testInitializeCore(core.address),
+          core.unsafeSetActivationThreshold(1),
+          core.registerUser(miner),
+        ]);
+        const activationBlockHeight =
+          setupBlock.height + CoreModel.ACTIVATION_DELAY - 1;
+
+        chain.mineEmptyBlockUntil(
+          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS_FIRST_PERIOD + CoreModel.TOKEN_HALVING_BLOCKS * 4 + 1
+        );
+
+        const block = chain.mineBlock([core.mineTokens(amount, miner)]);
+        chain.mineEmptyBlock(CoreModel.TOKEN_REWARD_MATURITY);
+
+        // act
+        const receipt = chain.mineBlock([
+          core.claimMiningReward(block.height - 1, miner),
+        ]).receipts[0];
+
+        // assert
+        receipt.result.expectOk().expectBool(true);
+
+        assertEquals(receipt.events.length, 1);
+
+        receipt.events.expectFungibleTokenMintEvent(
           90,
           miner.address,
           "theopetra-reat"
         );
       });
 
-      // it("succeeds and mints 3125 tokens in final issuance cycle", () => {
-      //   // arrange
-      //   const miner = accounts.get("wallet_2")!;
-      //   const amount = 2;
-      //   const setupBlock = chain.mineBlock([
-      //     core.testInitializeCore(core.address),
-      //     core.unsafeSetActivationThreshold(1),
-      //     core.registerUser(miner),
-      //   ]);
-      //   const activationBlockHeight =
-      //     setupBlock.height + CoreModel.ACTIVATION_DELAY - 1;
+      it("succeeds and mints 90 tokens in 46th issuance cycle", () => {
+        // arrange
+        const miner = accounts.get("wallet_2")!;
+        const amount = 2;
+        const setupBlock = chain.mineBlock([
+          core.testInitializeCore(core.address),
+          core.unsafeSetActivationThreshold(1),
+          core.registerUser(miner),
+        ]);
+        const activationBlockHeight =
+          setupBlock.height + CoreModel.ACTIVATION_DELAY - 1;
 
-      //   chain.mineEmptyBlockUntil(
-      //     activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS * 5 + 1
-      //   );
+        chain.mineEmptyBlockUntil(
+          activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS_FIRST_PERIOD + CoreModel.TOKEN_HALVING_BLOCKS * 45 + 1
+        );
 
-      //   const block = chain.mineBlock([core.mineTokens(amount, miner)]);
-      //   chain.mineEmptyBlock(CoreModel.TOKEN_REWARD_MATURITY);
+        const block = chain.mineBlock([core.mineTokens(amount, miner)]);
+        chain.mineEmptyBlock(CoreModel.TOKEN_REWARD_MATURITY);
 
-      //   // act
-      //   const receipt = chain.mineBlock([
-      //     core.claimMiningReward(block.height - 1, miner),
-      //   ]).receipts[0];
+        // act
+        const receipt = chain.mineBlock([
+          core.claimMiningReward(block.height - 1, miner),
+        ]).receipts[0];
 
-      //   // assert
-      //   receipt.result.expectOk().expectBool(true);
+        // assert
+        receipt.result.expectOk().expectBool(true);
 
-      //   assertEquals(receipt.events.length, 1);
+        assertEquals(receipt.events.length, 1);
 
-      //   receipt.events.expectFungibleTokenMintEvent(
-      //     3125,
-      //     miner.address,
-      //     "theopetra-reat"
-      //   );
-      // });
+        receipt.events.expectFungibleTokenMintEvent(
+          90,
+          miner.address,
+          "theopetra-reat"
+        );
+      });
     });
 
     describe("is-block-winner()", () => {
@@ -1772,6 +1836,38 @@ describe("[TheopetraREAT Core]", () => {
           .expectErr()
           .expectUint(CoreModel.ErrCode.ERR_STACKING_NOT_AVAILABLE);
       });
+
+      // CPB TODO - iterating through this many blocks seems to crash npm
+      // it("throws ERR_STACKING_NOT_AVAILABLE when past emission schedule", () => {
+      //   // arrange
+      //   const stacker = accounts.get("wallet_2")!;
+      //   const amountTokens = 200;
+      //   const lockPeriod = 2;
+
+      //   const setupBlock = chain.mineBlock([
+      //     core.testInitializeCore(core.address),
+      //     core.unsafeSetActivationThreshold(1),
+      //     core.registerUser(stacker),
+      //     token.ftMint(amountTokens, stacker),
+      //   ]);
+        
+      //   const activationBlockHeight =
+      //     setupBlock.height + CoreModel.ACTIVATION_DELAY - 1;
+
+      //   chain.mineEmptyBlockUntil(
+      //     activationBlockHeight + CoreModel.TOKEN_HALVING_BLOCKS_FIRST_PERIOD + CoreModel.TOKEN_HALVING_BLOCKS * 46 + 1
+      //   );
+        
+      //   // act
+      //   const receipt = chain.mineBlock([
+      //     core.stackTokens(amountTokens, lockPeriod, stacker),
+      //   ]).receipts[0];
+
+      //   // assert
+      //   receipt.result
+      //     .expectErr()
+      //     .expectUint(CoreModel.ErrCode.ERR_STACKING_NOT_AVAILABLE);
+      // });
 
       it("throws ERR_CANNOT_STACK while trying to stack with lock period = 0", () => {
         // arrange
