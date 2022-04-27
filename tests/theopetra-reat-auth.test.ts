@@ -22,7 +22,7 @@ beforeEach(() => {
   token = ctx.models.get(TokenModel);
 })
 
-describe("[CityCoin Auth]", () => {
+describe("[TheopetraREAT Auth]", () => {
   //////////////////////////////////////////////////
   // JOB MANAGEMENT
   //////////////////////////////////////////////////
@@ -1620,7 +1620,7 @@ describe("[CityCoin Auth]", () => {
   //////////////////////////////////////////////////
   describe("TOKEN MANAGEMENT", () => {
     describe("set-token-uri()", () => {
-      it("fails with ERR_UNAUTHORIZED when called by someone who is not city wallet", () => {
+      it("fails with ERR_UNAUTHORIZED when called by someone who is not non profit wallet", () => {
         // arrange
         const sender = accounts.get("wallet_2")!;
         // act

@@ -18,7 +18,7 @@ beforeEach(() => {
 })
 
 
-describe("[CityCoin Token]", () => {
+describe("[TheopetraREAT Token]", () => {
   describe("SIP-010 FUNCTIONS", () => {
     describe("transfer()", () => {
       it("succeeds with no memo supplied", () => {

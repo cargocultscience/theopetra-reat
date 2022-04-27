@@ -1,5 +1,5 @@
 [project]
-name = "citycoin"
+name = "theopetra-reat"
 
 [contracts.theopetra-reat-vrf]
 path = "contracts/clarinet/theopetra-reat-vrf.clar"

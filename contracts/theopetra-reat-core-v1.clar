@@ -26,7 +26,7 @@
 (define-constant ERR_CANNOT_STACK u1016)
 (define-constant ERR_REWARD_CYCLE_NOT_COMPLETED u1017)
 (define-constant ERR_NOTHING_TO_REDEEM u1018)
-(define-constant ERR_UNABLE_TO_FIND_CITY_WALLET u1019)
+(define-constant ERR_UNABLE_TO_FIND_NON_PROFIT_WALLET u1019)
 (define-constant ERR_CLAIM_IN_WRONG_CONTRACT u1020)
 (define-constant ERR_PAST_TOKEN_EMISSIONS u1021)
 

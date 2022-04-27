@@ -14,9 +14,9 @@ beforeEach(()=>{
   testUtils = ctx.models.get(TestUtilsModel);
 })
 
-describe("[CityCoin Test Utils]", () => {
+describe("[TheopetraREAT Test Utils]", () => {
   describe("test-wallet-attack()", () => {
-    it("throws ERR_UNAUTHORIZED when changing city wallet to a new address", () => {
+    it("throws ERR_UNAUTHORIZED when changing non profit wallet to a new address", () => {
       //arrange
       const sender = accounts.get("wallet_1")!;
 
@@ -30,7 +30,7 @@ describe("[CityCoin Test Utils]", () => {
     });
   });
   describe("test-wallet-attack-as-contract()", () => {
-    it("throws ERR_UNAUTHORIZED when changing city wallet to a new address as a contract", () => {
+    it("throws ERR_UNAUTHORIZED when changing non profit wallet to a new address as a contract", () => {
       //arrange
       const sender = accounts.get("wallet_1")!;
 
